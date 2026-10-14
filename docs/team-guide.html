@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEMS Team Guide</title>
+<style>
+:root {
+  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0efeb; --ink: #1c1c1a; --ink-2: #4a4a46;
+  --muted: #76766f; --line: #e2e1dc; --accent: #2b5fd9; --accent-soft: #e6edfc;
+  --good: #0f7a0f; --good-soft: #e3f3e3; --warn: #8a5a00; --warn-soft: #fdf1d6;
+  --bad: #b02a2a; --bad-soft: #fbe5e5; --code-bg: #f3f2ee;
+  --radius: 10px; --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --surface: #1d1d1b; --surface-2: #262624; --ink: #ecebe6; --ink-2: #c4c3bc;
+    --muted: #94938c; --line: #34342f; --accent: #7aa2ff; --accent-soft: #1e2a47;
+    --good: #6fd36f; --good-soft: #17301a; --warn: #f0c060; --warn-soft: #362b12;
+    --bad: #ff8a8a; --bad-soft: #3a1b1b; --code-bg: #232321;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --surface: #1d1d1b; --surface-2: #262624; --ink: #ecebe6; --ink-2: #c4c3bc;
+  --muted: #94938c; --line: #34342f; --accent: #7aa2ff; --accent-soft: #1e2a47;
+  --good: #6fd36f; --good-soft: #17301a; --warn: #f0c060; --warn-soft: #362b12;
+  --bad: #ff8a8a; --bad-soft: #3a1b1b; --code-bg: #232321;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 18px;
+  border-right: 1px solid var(--line); }
+nav.toc .brand { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+nav.toc .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+nav.toc a { display: block; color: var(--ink-2); text-decoration: none; padding: 4px 10px;
+  border-radius: 6px; font-size: 14px; }
+nav.toc a:hover { background: var(--surface-2); color: var(--ink); }
+nav.toc .grp { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  margin: 18px 10px 6px; }
+nav.toc a.lvl2 { padding-left: 22px; font-size: 13px; }
+main { padding: 40px 48px 120px; min-width: 0; }
+h1 { font-size: 34px; line-height: 1.2; margin: 0 0 8px; }
+h2 { font-size: 26px; margin: 64px 0 6px; padding-top: 8px; border-top: 2px solid var(--line); }
+h3 { font-size: 19px; margin: 34px 0 10px; }
+h4 { font-size: 16px; margin: 22px 0 8px; }
+p, li { color: var(--ink-2); }
+strong { color: var(--ink); }
+a { color: var(--accent); }
+.lede { font-size: 18px; color: var(--ink-2); max-width: 760px; }
+.meta { color: var(--muted); font-size: 14px; }
+code { font-family: var(--mono); font-size: .88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { font-family: var(--mono); font-size: 13.5px; line-height: 1.5; background: var(--code-bg);
+  padding: 14px 16px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 14.5px;
+  background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--surface-2); color: var(--ink); font-weight: 600; font-size: 13.5px; }
+td { color: var(--ink-2); }
+tr:last-child td { border-bottom: none; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 14px 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; margin: 14px 0; }
+.callout.good { border-color: var(--good); background: var(--good-soft); }
+.callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+.callout.bad { border-color: var(--bad); background: var(--bad-soft); }
+.callout p { margin: 4px 0; color: var(--ink); }
+.member-head { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; }
+.pill { display: inline-block; font-size: 12.5px; padding: 2px 10px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); font-family: var(--mono); }
+.badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.b-pending { background: var(--warn-soft); color: var(--warn); }
+.b-confirmed { background: var(--good-soft); color: var(--good); }
+.b-rejected { background: var(--bad-soft); color: var(--bad); }
+.b-cancelled { background: var(--surface-2); color: var(--muted); }
+details.qa { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin: 8px 0; }
+details.qa summary { cursor: pointer; padding: 11px 16px; font-weight: 600; color: var(--ink); list-style: none; }
+details.qa summary::before { content: "Q  "; color: var(--accent); font-family: var(--mono); }
+details.qa[open] summary { border-bottom: 1px solid var(--line); }
+details.qa .a { padding: 10px 16px 12px; }
+details.qa .a p { margin: 6px 0; }
+.layers { display: flex; flex-direction: column; gap: 8px; max-width: 640px; margin: 16px 0; }
+.layer { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.layer b { font-family: var(--mono); font-size: 14px; color: var(--ink); }
+.layer span { font-size: 14px; color: var(--ink-2); }
+.layer em { font-style: normal; font-size: 12px; color: var(--muted); }
+.arrow { text-align: center; color: var(--muted); font-size: 13px; line-height: 1; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; }
+.flow .node { padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid var(--line); background: var(--surface); }
+.flow .edge { color: var(--muted); font-size: 13px; }
+.checklist li { list-style: none; margin-left: -20px; }
+.checklist li::before { content: "☐  "; color: var(--accent); }
+.theme-toggle { margin-top: 22px; font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); cursor: pointer; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 16px; }
+  main { padding: 24px 16px 80px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .layer { grid-template-columns: 1fr; gap: 2px; }
+  h1 { font-size: 28px; }
+}
+@media print {
+  nav.toc { display: none; } .layout { display: block; } details.qa { break-inside: avoid; }
+  details.qa .a { display: block !important; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">📅 CEMS Team Guide</div>
+  <div class="sub">Campus Event Management System · Group 6</div>
+  <a href="#start">Start here</a>
+  <div class="grp">Team</div>
+  <a href="#team">Team overview</a>
+  <a class="lvl2" href="#process">How we worked</a>
+  <a class="lvl2" href="#problem">Problem &amp; personas</a>
+  <a class="lvl2" href="#architecture">Architecture</a>
+  <a class="lvl2" href="#lifecycle">Event lifecycle</a>
+  <a class="lvl2" href="#conditions">Brief conditions → code</a>
+  <a class="lvl2" href="#assumptions">Assumptions A1–A24</a>
+  <a class="lvl2" href="#run">Run &amp; test</a>
+  <a class="lvl2" href="#testing">Testing strategy</a>
+  <a class="lvl2" href="#demo">Demo script</a>
+  <a class="lvl2" href="#team-qa">Questions anyone may get</a>
+  <a class="lvl2" href="#limits">Limitations &amp; next steps</a>
+  <a class="lvl2" href="#ai">How we used AI</a>
+  <div class="grp">Members</div>
+  <a href="#m1">M1 · Foundation</a>
+  <a href="#m2">M2 · Business rules</a>
+  <a href="#m3">M3 · State machine</a>
+  <a href="#m4">M4 · App &amp; Requester UI</a>
+  <a href="#m5">M5 · Reviewer &amp; Facilities</a>
+  <a href="#m6">M6 · Notifications</a>
+  <a href="#m7">M7 · Schedule, tests, pitch</a>
+  <button class="theme-toggle" type="button" id="themeToggle">Toggle dark / light</button>
+</nav>
+
+<main>
+<header id="start">
+  <h1>Campus Event Management System: Team Guide</h1>
+  <p class="lede">Everything the team, and each member, needs to know to explain, defend and demo what we built: the shared picture first, then a detailed section for every member's step.</p>
+  <p class="meta">Repository: <code>github.com/H9660/Ms_hackathon_group_6</code> · Stack: Python 3.10+, Streamlit 1.65, SQLite, pytest · 182 automated tests</p>
+  <div class="callout">
+    <p><strong>How to use this guide.</strong></p>
+    <p>1. Everyone reads the <a href="#team">Team</a> section.</p>
+    <p>2. Then read <em>your</em> member section closely, and skim your neighbours' sections, the step before and the step after yours.</p>
+    <p>3. Evaluators may ask any member about their contribution, one business rule, one part of the solution, one assumption or trade-off, and how the work was validated. Each member section answers exactly those five.</p>
+  </div>
+</header>
+
+<!-- ================================================================ TEAM -->
+<h2 id="team">Team overview</h2>
+
+<div class="tablewrap"><table>
+<tr><th>Step</th><th>Member</th><th>Area</th><th>Commit</th><th>Key files</th></tr>
+<tr><td>1</td><td><strong>Vivek</strong> (M1)</td><td>Foundation: models, database, seed data, repository</td><td><code>da8fde0</code></td><td><code>cems/models.py</code>, <code>db.py</code>, <code>repository.py</code>, <code>seed.py</code></td></tr>
+<tr><td>2</td><td><strong>H9660</strong> (M2)</td><td>Business rules and conflict detection</td><td><code>1de8e44</code></td><td><code>cems/rules.py</code>, overlap queries, <code>docs/ASSUMPTIONS.md</code></td></tr>
+<tr><td>3</td><td><strong>shobhan-iiit</strong> (M3)</td><td>Workflow state machine</td><td><code>6fb80ea</code></td><td><code>cems/services.py</code></td></tr>
+<tr><td>4</td><td><strong>sandesh62874</strong> (M4)</td><td>Streamlit app and Requester UI</td><td><code>a79fd35</code></td><td><code>app.py</code>, <code>ui/requester.py</code>, <code>ui/common.py</code></td></tr>
+<tr><td>5</td><td><strong>ishank-kapania</strong> (M5)</td><td>Reviewer and Facilities Manager</td><td><code>e1f2255</code></td><td><code>cems/venue_service.py</code>, <code>ui/reviewer.py</code>, <code>ui/facilities.py</code></td></tr>
+<tr><td>6</td><td><strong>VanshMotwani</strong> (M6)</td><td>Bonus: in-app notifications</td><td><code>e8b5886</code></td><td><code>cems/notifications.py</code>, <code>ui/inbox.py</code></td></tr>
+<tr><td>7</td><td><strong>Souradeep Das</strong> (M7)</td><td>Campus schedule, acceptance tests, pitch, final README</td><td><code>bc20723</code></td><td><code>ui/schedule.py</code>, <code>tests/test_acceptance.py</code>, <code>docs/*</code></td></tr>
+</table></div>
+
+<h3 id="process">How we worked</h3>
+<p>We split the work into <strong>7 incremental steps, one member per step and one commit per step</strong>. Each member:</p>
+<ol>
+  <li><strong>pulled</strong> the previous step;</li>
+  <li><strong>validated it</strong> (ran <code>pytest -q</code> and the app);</li>
+  <li>built their step on top;</li>
+  <li>tested;</li>
+  <li>committed and pushed.</li>
+</ol>
+<p>Every commit leaves the project working and green. That is why the git history reads as a clean build-up: data → rules → workflow → first UI → full lifecycle UI → bonus → visibility and deliverables.</p>
+<div class="grid2">
+  <div class="card"><h4 style="margin-top:0">Why this split works</h4>
+    <ul>
+      <li><strong>Each step owns its own files</strong>, so work never collided.</li>
+      <li><strong>The interface was agreed up front</strong> (PLAN.md §3), so everyone could draft against it early.</li>
+      <li><strong>Each step adds one layer of value</strong> you can demo: tests at Steps 1–3, browser UI from Step 4.</li>
+      <li><strong>The next member validates the previous step</strong>, so every handover was reviewed.</li>
+    </ul></div>
+  <div class="card"><h4 style="margin-top:0">Shared conventions (CLAUDE.md)</h4>
+    <ul>
+      <li><strong>Strict layering:</strong> <code>ui → services → rules → repository → db → models</code>.</li>
+      <li><strong>Repositories never commit.</strong> Services own transactions.</li>
+      <li><strong>Rules only read</strong> and return readable reasons.</li>
+      <li><strong>Overlap is half-open</strong> (<code>&lt;</code>, never <code>&lt;=</code>).</li>
+      <li><strong>SQL is always parameterised</strong>, and every widget has a stable <code>key</code> for tests.</li>
+    </ul></div>
+</div>
+
+<h3 id="problem">Problem &amp; personas</h3>
+<p>The brief: campus events are run through messages and spreadsheets. The pain points it lists are:</p>
+<ul>
+  <li>conflicting venue requests;</li>
+  <li>venues chosen without checking capacity;</li>
+  <li>no visibility of request status;</li>
+  <li>review delays;</li>
+  <li>venues left unavailable after cancellations;</li>
+  <li>maintenance or renovation downtime;</li>
+  <li>different stakeholders needing different views.</li>
+</ul>
+<div class="tablewrap"><table>
+<tr><th>Persona</th><th>Who</th><th>What they can do in CEMS</th><th>Page</th></tr>
+<tr><td><strong>Requester</strong></td><td>Club, faculty, placement cell</td><td>Request a venue (with a live conflict check), track their requests, cancel their own confirmed events, read notifications</td><td><code>ui/requester.py</code></td></tr>
+<tr><td><strong>Event Reviewer</strong></td><td>Student Affairs / Events Office</td><td>Approve, or reject with a reason; cancel any confirmed event; see the history of every request; shared inbox</td><td><code>ui/reviewer.py</code></td></tr>
+<tr><td><strong>Facilities Manager</strong></td><td>Estates / maintenance</td><td>Block a venue for maintenance or renovation (refused over active bookings); remove blocks</td><td><code>ui/facilities.py</code></td></tr>
+<tr><td><strong>Campus community</strong></td><td>Anyone</td><td>Day timeline of every venue, free venues, all confirmed events</td><td><code>ui/schedule.py</code></td></tr>
+</table></div>
+
+<h4>Initial campus data (from the brief)</h4>
+<div class="tablewrap"><table>
+<tr><th>Venue</th><th>Type</th><th>Capacity</th><th>Seeded state</th></tr>
+<tr><td>Seminar Hall A</td><td>Seminar Hall</td><td>120</td><td><span class="badge b-confirmed">CONFIRMED</span> "Intro to Machine Learning Workshop" by AI Club (100 attendees), 4 Aug 2026 10:00–12:00</td></tr>
+<tr><td>Main Auditorium</td><td>Auditorium</td><td>500</td><td>Available</td></tr>
+<tr><td>Conference Room C</td><td>Conference Room</td><td>40</td><td>Blocked for <strong>Renovation</strong>, 4 Aug 2026 09:00–18:00</td></tr>
+<tr><td>Central Amphitheatre</td><td>Open Venue</td><td>300</td><td>Available</td></tr>
+<tr><td>Innovation Lab</td><td>Computer Lab</td><td>60</td><td><span class="badge b-confirmed">CONFIRMED</span> "Placement Coding Assessment" by Placement Cell (55), 6 Aug 2026 14:00–17:00</td></tr>
+</table></div>
+<p class="meta">The event titles and organisers are our additions; the brief only says "Confirmed event".</p>
+
+<h3 id="architecture">Architecture</h3>
+<p>Each layer imports only from the layers below it. That rule is what makes every part independently testable and explainable.</p>
+<div class="layers">
+  <div class="layer"><b>ui/* + app.py</b><span>Streamlit pages. Writes go through services; reads may use the repository. <em>M4, M5, M6, M7</em></span></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><b>services.py</b><span>The <em>only</em> place status changes. One <code>BEGIN IMMEDIATE</code> transaction per operation; audit log and notifications inside it. <em>M3 (+ M5 venue_service, M6 hooks)</em></span></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><b>rules.py</b><span>Validations. Read-only, and return <code>list[str]</code> of readable reasons (an empty list means OK). <em>M2</em></span></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><b>repository.py</b><span>SQL ↔ dataclasses. No business rules; never commits. <em>M1 (+ M2 overlap queries)</em></span></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><b>db.py</b><span>Connection, schema with <code>CHECK</code> and foreign-key constraints, <code>transaction()</code>, <code>clear_all()</code>. <em>M1 (+ M6 table)</em></span></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><b>models.py</b><span>Enums and dataclasses; no input/output. <em>M1 (+ M2 Role, M6 Notification)</em></span></div>
+</div>
+
+<h3 id="lifecycle">Event lifecycle</h3>
+<div class="flow">
+  <span class="node">new request</span><span class="edge">— submit (all checks pass) →</span>
+  <span class="node"><span class="badge b-pending">PENDING</span></span><span class="edge">— approve →</span>
+  <span class="node"><span class="badge b-confirmed">CONFIRMED</span></span><span class="edge">— cancel →</span>
+  <span class="node"><span class="badge b-cancelled">CANCELLED</span></span>
+</div>
+<div class="flow">
+  <span class="node"><span class="badge b-pending">PENDING</span></span><span class="edge">— reject (reason required) →</span>
+  <span class="node"><span class="badge b-rejected">REJECTED</span></span><span class="edge">closed. A revision is a new request.</span>
+</div>
+<div class="callout good"><p><strong>The one idea to remember:</strong> only <code>ACTIVE_STATUSES = (PENDING, CONFIRMED)</code> hold a venue. The overlap query only counts those. So rejecting or cancelling <em>releases</em> the venue just by changing the status: no rows are deleted and no extra code is needed. Conditions 6 and 8 fall out of this one design choice.</p></div>
+<div class="tablewrap"><table>
+<tr><th>Transition</th><th>Allowed from</th><th>Who</th><th>Extra checks</th><th>Audit action</th><th>Notifies</th></tr>
+<tr><td><code>submit_request</code></td><td>(new)</td><td>Requester</td><td>Every rule in <code>validate_request</code></td><td>SUBMITTED</td><td>Reviewer inbox</td></tr>
+<tr><td><code>approve_request</code></td><td>PENDING</td><td>Reviewer</td><td>Re-checks availability, excluding the request itself</td><td>APPROVED</td><td>Organiser</td></tr>
+<tr><td><code>reject_request</code></td><td>PENDING</td><td>Reviewer</td><td>Reason required</td><td>REJECTED</td><td>Organiser (with the reason)</td></tr>
+<tr><td><code>cancel_event</code></td><td>CONFIRMED</td><td>Organiser or Reviewer</td><td><code>can_cancel</code></td><td>CANCELLED</td><td>The other party</td></tr>
+</table></div>
+
+<h3 id="conditions">Brief conditions → code</h3>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Condition (brief)</th><th>How we satisfy it</th><th>Owner</th></tr>
+<tr><td>1</td><td>Event has a start, an end and a venue</td><td><code>Event</code> dataclass; <code>validate_time_window</code>; DB <code>CHECK (end_at &gt; start_at)</code></td><td>M1, M2</td></tr>
+<tr><td>2</td><td>No overlapping active or confirmed commitments</td><td><code>find_overlapping_events</code> (active only, half-open) inside <code>check_availability</code></td><td>M2</td></tr>
+<tr><td>3</td><td>Conflict prevented <em>before</em> submit</td><td>The form re-validates on every change and Submit is disabled; the service re-validates in the transaction</td><td>M4, M3</td></tr>
+<tr><td>4</td><td>Maintenance, renovation and other restrictions</td><td><code>venue_blocks</code> table + <code>find_overlapping_blocks</code>; Facilities page</td><td>M1, M2, M5</td></tr>
+<tr><td>5</td><td>Review before confirmation</td><td>The only path to CONFIRMED is <code>approve_request</code> from PENDING</td><td>M3, M5</td></tr>
+<tr><td>6</td><td>Reject closes the request, releases the venue, and revisions need a new request</td><td>REJECTED is not active; there is no edit function anywhere</td><td>M3</td></tr>
+<tr><td>7</td><td>An appropriate user can cancel</td><td><code>can_cancel</code>: CONFIRMED only, by the organiser or the Reviewer</td><td>M2, M3</td></tr>
+<tr><td>8</td><td>Cancel releases the venue</td><td>CANCELLED is not active</td><td>M3</td></tr>
+<tr><td>9</td><td>No partial or split bookings, no suggestions</td><td>Deliberately out of scope (documented)</td><td>M7</td></tr>
+<tr><td>10</td><td>Clear reason when a request cannot proceed</td><td>Every rule returns readable messages naming the venue, times and cause</td><td>M2</td></tr>
+</table></div>
+
+<h3 id="assumptions">Assumptions A1–A24</h3>
+<p>The brief allows assumptions if they are documented and applied consistently. The full table, with rationale, is in <code>docs/ASSUMPTIONS.md</code>. Know at least the ones in <strong>bold</strong>.</p>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Assumption</th><th>#</th><th>Assumption</th></tr>
+<tr><td><strong>A1</strong></td><td><strong>Half-open intervals; back-to-back bookings are allowed</strong></td><td>A13</td><td>Every transition needs the actor's name; a reject needs a reason</td></tr>
+<tr><td><strong>A2</strong></td><td><strong>1 ≤ attendees ≤ capacity</strong></td><td>A14</td><td>Records are never deleted; only the status changes</td></tr>
+<tr><td><strong>A3</strong></td><td><strong>end &gt; start, at most 12 hours per event</strong></td><td>A15</td><td>In the UI an event is on a single date</td></tr>
+<tr><td><strong>A4</strong></td><td><strong>Past dates are not rejected (the seed data is in Aug 2026)</strong></td><td>A16</td><td>The organiser is the name in the sidebar</td></tr>
+<tr><td><strong>A5</strong></td><td><strong>A block can't cover an active booking</strong></td><td>A17</td><td>Forms open on 4 Aug 2026 for demos</td></tr>
+<tr><td><strong>A6</strong></td><td><strong>No authentication; a role selector instead</strong></td><td>A18</td><td>Blocks may span several days</td></tr>
+<tr><td><strong>A7</strong></td><td><strong>Only PENDING can be reviewed; only CONFIRMED can be cancelled</strong></td><td>A19</td><td>Blocks can be removed</td></tr>
+<tr><td>A8</td><td>Minute precision, no time zones</td><td>A20</td><td>Approve is disabled when the slot is no longer free</td></tr>
+<tr><td>A9</td><td>Organiser names are matched case-insensitively</td><td><strong>A21</strong></td><td><strong>One shared reviewer inbox</strong></td></tr>
+<tr><td>A10</td><td>A fixed list of event types</td><td>A22</td><td>Notifications are in-app only</td></tr>
+<tr><td>A11</td><td>All problems are reported at once; dependent checks are skipped</td><td><strong>A23</strong></td><td><strong>A notification is in the same transaction as its change</strong></td></tr>
+<tr><td>A12</td><td>Approval re-checks availability</td><td>A24</td><td>The schedule is public; released requests are hidden by default</td></tr>
+</table></div>
+
+<h3 id="run">Run &amp; test</h3>
+<pre><code>python -m venv .venv
+.venv\Scripts\activate            # Windows   (macOS/Linux: source .venv/bin/activate)
+pip install -r requirements.txt
+
+streamlit run app.py              # http://localhost:8501 (creates + seeds cems.db)
+python -m cems.seed --reset       # wipe back to the initial campus data
+pytest -q                         # 182 tests, ~8 s</code></pre>
+<div class="callout warn"><p><strong>Windows firewall popup:</strong> the first time Streamlit opens a port, Windows may ask for admin rights to allow network access. Click <strong>Cancel</strong>. The app still works at <code>localhost</code>. Admin is only needed for other laptops to connect.</p></div>
+
+<h3 id="testing">Testing strategy</h3>
+<div class="tablewrap"><table>
+<tr><th>Layer</th><th>Files</th><th>Tests</th><th>What it proves</th></tr>
+<tr><td>Models &amp; DB</td><td><code>test_models.py</code>, <code>test_db.py</code></td><td>15</td><td>Constraints reject bad data; transactions commit and roll back, including when nested</td></tr>
+<tr><td>Seed</td><td><code>test_seed.py</code></td><td>9</td><td>The DB matches the brief's table exactly; seeding is idempotent; reset works</td></tr>
+<tr><td>Repository &amp; overlap</td><td><code>test_repository.py</code>, <code>test_overlap.py</code></td><td>28</td><td>Round trips and filters; 8 overlap boundary cases; only active statuses hold</td></tr>
+<tr><td>Rules</td><td><code>test_rules.py</code></td><td>38</td><td>Every rule and its exact message; boundaries (exactly 12 h, attendees = capacity)</td></tr>
+<tr><td>Lifecycle</td><td><code>test_lifecycle.py</code></td><td>25</td><td>End-to-end flows; every invalid transition; rollback after an injected failure</td></tr>
+<tr><td>Blocks</td><td><code>test_blocks.py</code></td><td>14</td><td>Refused over PENDING and CONFIRMED; adjacency allowed; removal reopens</td></tr>
+<tr><td>Notifications</td><td><code>test_notifications.py</code></td><td>13</td><td>Right recipient and message; nothing on failure; rolls back with its transition</td></tr>
+<tr><td>UI pages</td><td><code>test_app_*.py</code></td><td>26</td><td>Real Streamlit script driven headless with <code>AppTest</code>, each test with its own temporary DB</td></tr>
+<tr><td>Acceptance</td><td><code>test_acceptance.py</code></td><td>14</td><td>Scenarios S1–S12, each clicked through in one session, switching roles</td></tr>
+</table></div>
+<p><strong>Beyond unit tests:</strong></p>
+<ul>
+  <li><strong>Mutation check (M2):</strong> changing the overlap query from <code>&lt;</code> to <code>&lt;=</code> failed 3 tests.</li>
+  <li><strong>Two-connection lock check (M3):</strong> a second writer waits, then fails cleanly with nothing written.</li>
+  <li><strong>Real server health check (M4).</strong></li>
+  <li><strong>Multi-role session run (M5).</strong></li>
+</ul>
+
+<h3 id="demo">Demo script (≈ 6 minutes)</h3>
+<p>Before starting, click <strong>Reset demo data</strong> in the sidebar.</p>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Who</th><th>What to do / say</th></tr>
+<tr><td>1</td><td>M7</td><td><strong>Problem slide:</strong> pain points, personas, the lifecycle, the key rules</td></tr>
+<tr><td>2</td><td>M4</td><td><strong>Happy path.</strong> As Requester <em>Coding Club</em>: Main Auditorium, 5 Aug 2026, 14:00–16:00, 300 attendees. Show the green "available" message, then Submit; it becomes PENDING</td></tr>
+<tr><td>3</td><td>M5 → M6</td><td><strong>Review.</strong> Switch to Reviewer: the inbox shows the new request. Approve it. Switch back to Requester: the inbox says "approved"</td></tr>
+<tr><td>4</td><td>M4 → M2</td><td><strong>Conflicts</strong>, each blocked before submit with its reason:<br>· Seminar Hall A, 4 Aug, 11:00–13:00 (overlap)<br>· Conference Room C, 4 Aug (renovation)<br>· Innovation Lab, 80 attendees (capacity)<br>· Seminar Hall A, 12:00–14:00 is <em>allowed</em> (back-to-back). M2 explains the overlap rule</td></tr>
+<tr><td>5</td><td>M5 → M3</td><td><strong>Release.</strong> Facilities tries to block the auditorium slot and is refused. Requester cancels the event. Facilities blocks it again, and now it succeeds. M3 explains the state machine and the transaction</td></tr>
+<tr><td>6</td><td>M7</td><td><strong>Campus schedule</strong> for 4 Aug: the timeline, the free venues, all confirmed events</td></tr>
+<tr><td>7</td><td>M1 / M6</td><td>Run <code>pytest -q</code> live (182 passed). M1: data model and seed data. M6: why notifications</td></tr>
+<tr><td>8</td><td>M7</td><td><strong>Solution slide:</strong> decisions, trade-offs, testing, limitations, next steps</td></tr>
+</table></div>
+<div class="callout"><p><strong>If evaluators give a new scenario:</strong> enter it on the Requester page. The live check explains immediately whether it's allowed. Whoever owns that rule answers, using the table in <a href="#conditions">Brief conditions → code</a>.</p></div>
+
+<h3 id="team-qa">Questions anyone may get</h3>
+<details class="qa"><summary>What happens if two people request the same slot at the same moment?</summary><div class="a">
+<p>Both see the slot as free on screen, but each <code>submit_request</code> runs inside <code>BEGIN IMMEDIATE</code>, which takes SQLite's write lock <em>before</em> checking. The second submit waits for the first to commit, then re-runs the check, sees the first request as PENDING, and fails with "already booked … (PENDING)". A pending request already holds the slot, so the second person is told immediately.</p></div></details>
+<details class="qa"><summary>How does rejecting or cancelling "release" the venue?</summary><div class="a">
+<p>The overlap query only counts PENDING and CONFIRMED events. Changing the status to REJECTED or CANCELLED means the next conflict check simply no longer sees that event. Nothing is deleted, so the history is kept.</p></div></details>
+<details class="qa"><summary>Why can't a requester edit a rejected request?</summary><div class="a">
+<p>Condition 6 says a rejected request is closed and revisions need a new request. We have no edit function at any layer, so this can't be bypassed.</p></div></details>
+<details class="qa"><summary>Why no authentication?</summary><div class="a">
+<p>The brief marks it optional. With 90 minutes, we put the time into the complete lifecycle, the validations and the tests. A sidebar role selector stands in for login (A6). It's listed as the first next step (SSO).</p></div></details>
+<details class="qa"><summary>Why SQLite and not JSON or in-memory storage?</summary><div class="a">
+<p>It comes with Python and needs no setup. More importantly, it gives us <strong>transactions</strong> (check and write together), <strong>constraints</strong> (status values, end &gt; start, capacity &gt; 0) and <strong>foreign keys</strong>, all of which JSON files can't enforce.</p></div></details>
+<details class="qa"><summary>Is 12:00–14:00 after a 10:00–12:00 booking a conflict?</summary><div class="a">
+<p>No. We use half-open intervals (A1): overlap means <code>new.start &lt; old.end AND old.start &lt; new.end</code>, and <code>12:00 &lt; 12:00</code> is false. Tests cover both edges, and a mutation check proves the tests would catch <code>&lt;=</code>.</p></div></details>
+<details class="qa"><summary>Why do past dates work?</summary><div class="a">
+<p>The brief's data is in August 2026. Rejecting past dates would make its own scenarios impossible to demo, so we documented A4 and applied it consistently. In production this would be a one-line rule.</p></div></details>
+<details class="qa"><summary>How did you use AI, and how did you keep control of it?</summary><div class="a">
+<p>We wrote the interface contract and rules first, then gave them to the AI. Every member reviewed and ran the output and corrected at least one AI mistake, each recorded in <code>docs/contributions/mN.md</code> (see <a href="#ai">How we used AI</a>). Tests, including mutation and rollback tests, were our main way of checking AI output.</p></div></details>
+
+<h3 id="limits">Limitations &amp; next steps</h3>
+<div class="grid2">
+  <div class="card"><h4 style="margin-top:0">Known limitations</h4><ul>
+    <li>No real identity: anyone can type any name</li>
+    <li>Events last at most 12 hours on one date; no recurring events</li>
+    <li>Blocks are not in the audit log</li>
+    <li>Notifications are in-app only; the reviewer inbox is shared</li>
+    <li>Local time, minute precision</li>
+    <li>SQLite is one writer at a time: fine for a campus, not for heavy concurrent use</li></ul></div>
+  <div class="card"><h4 style="margin-top:0">Next steps</h4><ol>
+    <li>SSO login and per-person inboxes</li>
+    <li>Email and <code>.ics</code> calendar export</li>
+    <li>Recurring and multi-day events</li>
+    <li>Utilisation analytics</li>
+    <li>Alternative-venue suggestions</li>
+    <li>Review targets with escalation</li>
+    <li>Audit trail for blocks</li></ol></div>
+</div>
+
+<h3 id="ai">How we used AI</h3>
+<p>Each member caught and corrected a specific AI mistake. These make the strongest answers to "how did you validate AI output?":</p>
+<div class="tablewrap"><table>
+<tr><th>Member</th><th>What the AI got wrong</th><th>How we caught and fixed it</th></tr>
+<tr><td>M1</td><td><code>seed()</code> changed the shared module-level seed objects</td><td>Replaced with <code>dataclasses.replace(...)</code>; reset is now side-effect free</td></tr>
+<tr><td>M2</td><td>Overlap query used <code>&lt;=</code>, which blocks back-to-back bookings</td><td>Strict <code>&lt;</code>; edge tests; a mutation check proves the tests catch it</td></tr>
+<tr><td>M3</td><td>Approval re-ran <code>validate_request</code>, so a pending request conflicts with itself</td><td><code>check_availability(..., exclude_event_id=event.id)</code> + a test</td></tr>
+<tr><td>M4</td><td>Form built with <code>st.form</code>, so conflicts only appear after Submit (breaks condition 3)</td><td>Plain widgets + live validation + disabled Submit</td></tr>
+<tr><td>M5</td><td><code>add_block</code> only checked CONFIRMED, so a block could cover a PENDING request</td><td>Checks both active statuses + a test</td></tr>
+<tr><td>M6</td><td>Proposed saving notifications separately, after the change</td><td>Kept them in the same transaction (A23) + a rollback test</td></tr>
+<tr><td>M7</td><td>Timeline showed only busy venues, hiding the free ones</td><td>Always lists every venue + a "free all day" summary; also corrected test counts in the docs</td></tr>
+</table></div>
+
+<!-- ================================================================ M1 -->
+<h2 id="m1">M1 · Foundation: data model, database, seed data</h2>
+<div class="member-head"><strong>Vivek</strong><span class="pill">Step 1</span><span class="pill">da8fde0</span><span class="pill">34 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>cems/models.py</code></td><td><code>Status</code> enum (PENDING, CONFIRMED, REJECTED, CANCELLED); <code>ACTIVE_STATUSES</code>; <code>EVENT_TYPES</code>; <code>DATETIME_FORMAT = "%Y-%m-%dT%H:%M"</code>; <code>to_db</code> / <code>from_db</code>; dataclasses <code>Venue</code>, <code>Event</code>, <code>VenueBlock</code>, <code>AuditEntry</code></td></tr>
+<tr><td><code>cems/db.py</code></td><td><code>SCHEMA</code> (venues, events, venue_blocks, audit_log + indexes); <code>get_conn</code>; <code>init_db</code>; <code>transaction()</code>; <code>clear_all()</code>; <code>TABLES_CHILD_FIRST</code></td></tr>
+<tr><td><code>cems/repository.py</code></td><td><code>NotFoundError</code>; row → dataclass mappers; venue / event / block / audit functions; <code>update_status</code> raises if the event doesn't exist</td></tr>
+<tr><td><code>cems/seed.py</code></td><td>The brief's data; <code>seed()</code> (idempotent, returns True/False); <code>reset_db()</code>; command line <code>python -m cems.seed [--reset]</code></td></tr>
+<tr><td>Project files</td><td><code>README.md</code>, <code>CLAUDE.md</code>, pinned <code>requirements.txt</code>, <code>pyproject.toml</code> (pytest config), <code>.gitignore</code>, <code>.gitattributes</code> (LF line endings for 7 machines)</td></tr>
+<tr><td>Tests</td><td><code>conftest.py</code> fixtures <code>conn</code> (in-memory + seed) and <code>empty_conn</code>; <code>test_models</code>, <code>test_db</code>, <code>test_seed</code>, <code>test_repository</code></td></tr>
+</table></div>
+
+<h3>How it works: what you must be able to explain</h3>
+<h4>1. Times are stored as sortable text</h4>
+<p>Datetimes are stored as <code>"2026-08-04T10:00"</code>. This format <strong>sorts in time order as plain text</strong>, so SQL comparisons like <code>start_at &lt; ?</code> work directly on the stored values. Columns are called <code>start_at</code> / <code>end_at</code> because <code>END</code> is an SQL keyword.</p>
+<h4>2. The database also enforces the basics</h4>
+<pre><code>status  TEXT NOT NULL CHECK (status IN ('PENDING','CONFIRMED','REJECTED','CANCELLED')),
+attendees INTEGER NOT NULL CHECK (attendees &gt; 0),
+CHECK (end_at &gt; start_at)
+venue_id INTEGER NOT NULL REFERENCES venues(id)     -- with PRAGMA foreign_keys = ON</code></pre>
+<p>User-friendly messages come from <code>rules.py</code>. These constraints are the <strong>last line of defence</strong> if any code path skips the rules.</p>
+<h4>3. The transaction policy</h4>
+<pre><code>conn = sqlite3.connect(path, isolation_level=None, check_same_thread=False)  # autocommit mode
+
+@contextmanager
+def transaction(conn, immediate=False):
+    if conn.in_transaction:      # nested: join the outer transaction
+        yield conn; return
+    conn.execute("BEGIN IMMEDIATE" if immediate else "BEGIN")
+    try:    yield conn
+    except BaseException:
+        conn.rollback(); raise
+    conn.commit()</code></pre>
+<ul>
+  <li><strong>Autocommit mode</strong> (<code>isolation_level=None</code>) means we control exactly where transactions start.</li>
+  <li><strong><code>immediate=True</code></strong> takes the write lock up front, which M3 uses to keep the check and the write together.</li>
+  <li><strong>Nested calls join the outer transaction</strong>, so <code>reset_db</code> = <code>clear_all</code> + <code>seed</code> is atomic.</li>
+  <li><strong>Repositories never commit</strong>; the caller does.</li>
+  <li><strong><code>check_same_thread=False</code></strong> because Streamlit shares one cached connection across reruns.</li>
+</ul>
+<h4>4. Seeding is idempotent, and reset is safe</h4>
+<p><code>seed()</code> does nothing if any venue exists. <code>reset_db()</code> deletes all rows in <code>TABLES_CHILD_FIRST</code> order (children before parents, so foreign keys hold), then seeds, in one transaction. Seeded events get a <code>SEEDED</code> audit entry by actor <code>system</code>.</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th><th>Alternative rejected</th></tr>
+<tr><td>SQLite</td><td>Transactions, constraints, foreign keys, comes with Python, allowed by the brief</td><td>JSON / CSV: no atomicity, no constraints</td></tr>
+<tr><td>Times as minute-precision ISO text</td><td>Overlap SQL stays simple; readable in the DB</td><td>Unix timestamps: unreadable; seconds and time zones not needed</td></tr>
+<tr><td>Autocommit + explicit <code>transaction()</code></td><td>Clear boundaries; services control atomicity</td><td>Python's implicit transactions: hidden commit points</td></tr>
+<tr><td>Status changes, never deletes</td><td>History is kept; releasing a venue is free</td><td>Deleting rejected rows: loses the audit trail</td></tr>
+<tr><td>Fresh in-memory DB per test</td><td>Tests are isolated and fast (~0.1 s)</td><td>A shared test DB: order-dependent tests</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>A venue is held only by PENDING or CONFIRMED events (<code>ACTIVE_STATUSES</code>).</strong> Every conflict check in the system builds on this one definition.</p></div>
+<h3>Assumption / trade-off</h3>
+<p><strong>A8, minute precision with no time zone:</strong> simpler SQL and fine for one campus; multi-campus support would need time zones. <strong>DB constraints duplicate some rules:</strong> a little redundancy, deliberately, as defence in depth.</p>
+<h3>How it was validated</h3>
+<ul>
+  <li><code>pytest -q</code> → 34 passed. The seed tests compare every venue, event and block against the brief's table.</li>
+  <li>Ran <code>python -m cems.seed</code> twice (the second was a no-op), then <code>--reset</code>.</li>
+  <li>Rollback tests: an exception inside <code>transaction()</code>, including a nested one, leaves zero rows.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The first <code>seed()</code> set <code>event.venue_id = …</code> directly on the module-level seed objects, which silently changes global state on every reset. It now uses <code>dataclasses.replace(event, venue_id=…)</code>.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Why is <code>end</code> not a column name?</summary><div class="a"><p><code>END</code> is an SQL keyword (<code>CASE … END</code>). <code>start_at</code> / <code>end_at</code> avoid quoting bugs.</p></div></details>
+<details class="qa"><summary>What does <code>transaction()</code> do if called inside another transaction?</summary><div class="a"><p>It joins the outer one: it doesn't begin or commit. If anything fails, the outer transaction rolls everything back together (tested in <code>test_nested_transaction_joins_outer_and_rolls_back_together</code>).</p></div></details>
+<details class="qa"><summary>What if someone inserts an event with status "APPROVED"?</summary><div class="a"><p>The database refuses it with an <code>IntegrityError</code> from the CHECK constraint (<code>test_unknown_status_is_rejected</code>). Our status is CONFIRMED, not APPROVED.</p></div></details>
+<details class="qa"><summary>How do you know the seed data matches the brief?</summary><div class="a"><p><code>test_seed.py</code> asserts each venue's name, type and capacity, both confirmed events' exact times, the renovation block, and that the two "Available" venues have no bookings or blocks.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> M2 adds the overlap queries to your repository. M6 adds the <code>notifications</code> table to your schema and <code>TABLES_CHILD_FIRST</code>.</p>
+
+<!-- ================================================================ M2 -->
+<h2 id="m2">M2 · Business rules and conflict detection</h2>
+<div class="member-head"><strong>H9660</strong><span class="pill">Step 2</span><span class="pill">1de8e44</span><span class="pill">90 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>cems/repository.py</code></td><td><code>find_overlapping_events(conn, venue_id, start, end, exclude_event_id=None)</code>: active only. <code>find_overlapping_blocks(...)</code></td></tr>
+<tr><td><code>cems/rules.py</code></td><td><code>MAX_DURATION = 12 h</code>; <code>format_window</code>; <code>validate_time_window</code>; <code>validate_capacity</code>; <code>check_availability</code>; <code>validate_request</code>; <code>can_cancel</code></td></tr>
+<tr><td><code>cems/models.py</code></td><td><code>Role</code> enum: Requester, Reviewer, Facilities Manager</td></tr>
+<tr><td><code>docs/ASSUMPTIONS.md</code></td><td>Assumption table + mapping of brief conditions to code + example messages</td></tr>
+<tr><td>Tests</td><td><code>test_overlap.py</code> (18), <code>test_rules.py</code> (38)</td></tr>
+</table></div>
+
+<h3>How it works</h3>
+<h4>1. The overlap query (half-open intervals)</h4>
+<pre><code>SELECT * FROM events
+WHERE venue_id = ? AND status IN ('PENDING','CONFIRMED')
+  AND start_at &lt; :new_end AND :new_start &lt; end_at
+  [AND id != :exclude_event_id]</code></pre>
+<p>Two intervals overlap exactly when <strong>each starts before the other ends</strong>. That one condition covers every case: partly before, partly after, inside, enclosing and identical. With strict <code>&lt;</code>, an event ending at 12:00 and one starting at 12:00 do <em>not</em> overlap.</p>
+<div class="tablewrap"><table>
+<tr><th>Against Seminar Hall A 10:00–12:00</th><th>Overlaps?</th></tr>
+<tr><td>09:00–11:00 · 11:00–13:00 · 10:30–11:30 · 09:00–13:00 · 10:00–12:00</td><td>Yes (all five)</td></tr>
+<tr><td>08:00–10:00 · 12:00–14:00 · 10:00–12:00 on another day</td><td>No</td></tr>
+</table></div>
+<h4>2. <code>validate_request</code>: every problem, in a sensible order</h4>
+<ol>
+  <li>Title required; organiser required; event type must be in <code>EVENT_TYPES</code></li>
+  <li>Time window: both times given, end &gt; start, at most 12 h</li>
+  <li>The venue exists. <em>If not, stop here</em>: capacity and availability need a venue</li>
+  <li>Capacity: 1 ≤ attendees ≤ capacity</li>
+  <li>Availability (overlaps + blocks). <em>Only if the window is valid</em>, otherwise the messages would be misleading</li>
+</ol>
+<p>It returns <code>list[str]</code>; an empty list means valid. Because rules only <em>read</em>, the UI can call it on every keystroke (M4), the service re-runs it in the transaction (M3), and the reviewer page shows <code>check_availability</code> before Approve (M5).</p>
+<h4>3. Message quality (condition 10)</h4>
+<pre><code>Seminar Hall A is already booked 04 Aug 2026 10:00–12:00 for 'Intro to Machine Learning Workshop' (CONFIRMED).
+Conference Room C is unavailable 04 Aug 2026 09:00–18:00 (Renovation).
+Innovation Lab holds 60 people; 80 expected attendees exceed its capacity.
+Only the organiser (AI Club) or a Reviewer can cancel this event.</code></pre>
+<h4>4. <code>exclude_event_id</code></h4>
+<p>When M3 re-checks a <em>pending</em> request during approval, the request would find itself as a conflict. <code>exclude_event_id</code> skips it. You designed this in Step 2, ahead of when it was needed.</p>
+<h4>5. <code>can_cancel</code></h4>
+<p>Only CONFIRMED events can be cancelled. A Reviewer can always cancel; a Requester only if <code>name.strip().casefold() == organiser.strip().casefold()</code> (A9). Facilities can't cancel.</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th></tr>
+<tr><td>Rules return reason lists rather than raising</td><td>All problems shown at once; usable for live checks without try/except</td></tr>
+<tr><td>Dependent checks are skipped</td><td>No "Seminar Hall is booked" message when end is before start; no capacity message without a venue</td></tr>
+<tr><td>Half-open intervals</td><td>Standard room-booking practice; no forced gaps between events</td></tr>
+<tr><td>Separate <code>check_availability</code></td><td>Reused by approval, the reviewer UI and the request form</td></tr>
+<tr><td>12-hour maximum</td><td>Catches AM/PM mistakes; long festivals can be several requests</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>Condition 2: a venue is never committed to overlapping active bookings</strong>, enforced by the half-open overlap query over PENDING + CONFIRMED only.</p></div>
+<h3>Assumption / trade-off</h3>
+<p><strong>A1, back-to-back allowed.</strong> <strong>A11, all problems reported but dependent ones skipped:</strong> slightly more branching, in exchange for clearer messages.</p>
+<h3>How it was validated</h3>
+<ul>
+  <li>8 boundary cases against the seeded booking, block edges, and one test per status.</li>
+  <li>Every message is asserted word for word.</li>
+  <li><strong>Mutation check:</strong> changing <code>&lt;</code> to <code>&lt;=</code> failed 3 tests; then reverted.</li>
+  <li><code>pytest -q</code> → 90 passed.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI wrote <code>start_at &lt;= ? AND ? &lt;= end_at</code>, which blocks back-to-back bookings. You changed it to strict <code>&lt;</code> and added both edge tests.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Why does one condition cover all overlap cases?</summary><div class="a"><p>Two intervals <em>don't</em> overlap only if one ends before the other starts: <code>new.end ≤ old.start</code> or <code>old.end ≤ new.start</code>. Negating that gives <code>new.start &lt; old.end AND old.start &lt; new.end</code>.</p></div></details>
+<details class="qa"><summary>Does a rejected request still block the slot?</summary><div class="a"><p>No. Only PENDING and CONFIRMED are in the query (<code>test_rejected_or_cancelled_release_the_slot</code>).</p></div></details>
+<details class="qa"><summary>What if attendees equal capacity exactly?</summary><div class="a"><p>Allowed: 500 people in the 500-seat auditorium passes (<code>test_attendees_equal_to_capacity_is_allowed</code>).</p></div></details>
+<details class="qa"><summary>Why can't rules write anything?</summary><div class="a"><p>So they're safe to call anywhere, any number of times, including on every UI rerun. Writes and transactions belong to services.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> M1 provides the repository. M3 calls <code>validate_request</code>, <code>check_availability</code> and <code>can_cancel</code>. M4 calls <code>validate_request</code> live.</p>
+
+<!-- ================================================================ M3 -->
+<h2 id="m3">M3 · Workflow state machine</h2>
+<div class="member-head"><strong>shobhan-iiit</strong><span class="pill">Step 3</span><span class="pill">6fb80ea</span><span class="pill">115 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>cems/services.py</code></td><td><code>BookingError(reasons)</code>; helpers <code>_require_actor</code>, <code>_load_event</code>, <code>_require_pending</code>; <code>submit_request</code>, <code>approve_request</code>, <code>reject_request</code>, <code>cancel_event</code></td></tr>
+<tr><td>Tests</td><td><code>test_lifecycle.py</code> (25): end-to-end flows, invalid transitions, required inputs, rollback</td></tr>
+<tr><td>Docs</td><td>README "Event lifecycle" (Mermaid state diagram + workflow table); assumptions A12–A14</td></tr>
+</table></div>
+
+<h3>How it works</h3>
+<h4>1. Every operation has the same shape</h4>
+<pre><code>def approve_request(conn, event_id, actor):
+    actor = _require_actor(actor)                       # name needed for the audit log
+    with transaction(conn, immediate=True):             # take the write lock FIRST
+        event = _load_event(conn, event_id)             # BookingError if missing
+        _require_pending(event, "approved")             # state guard
+        conflicts = rules.check_availability(conn, venue, event.start, event.end,
+                                             exclude_event_id=event.id)
+        if conflicts: raise BookingError([f"Cannot approve request #{event.id}:", *conflicts])
+        repo.update_status(conn, event.id, Status.CONFIRMED)
+        repo.log_action(conn, event.id, "APPROVED", actor)
+        notify.notify(conn, event.organiser, "...approved...")   # added by M6</code></pre>
+<p><strong>Validate inputs → lock → load → guard state → check rules → write → audit (→ notify).</strong> Any exception rolls back the whole block.</p>
+<h4>2. Why <code>BEGIN IMMEDIATE</code></h4>
+<p>A normal <code>BEGIN</code> only takes the write lock at the first write. Two submits could both <em>read</em> "slot free" and then both insert. <code>BEGIN IMMEDIATE</code> takes the lock <em>before</em> the check, so writers run one after another: the second waits, then sees the first request as PENDING and is refused.</p>
+<h4>3. The guards</h4>
+<ul>
+  <li><strong>Approve and reject:</strong> only from PENDING. The message is "Only PENDING requests can be approved (request #3 is REJECTED)."</li>
+  <li><strong>Cancel:</strong> <code>rules.can_cancel</code>, which allows CONFIRMED only, by the organiser or the Reviewer.</li>
+  <li><strong>Reject:</strong> the reason is required and stripped. <strong>Every action:</strong> the actor name is required.</li>
+</ul>
+<h4>4. <code>BookingError</code></h4>
+<p>One error type for every refusal. <code>.reasons</code> is a <code>list[str]</code> that the UI shows directly. It also accepts a single string.</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th></tr>
+<tr><td>One module owns all status changes</td><td>No hidden shortcuts to CONFIRMED; easy to audit and explain</td></tr>
+<tr><td>Re-validate in <code>submit_request</code> even though the UI already checked</td><td>The UI check can be out of date (the page loaded before someone else booked)</td></tr>
+<tr><td>Approval re-checks availability</td><td>Defence in depth: the moment a booking becomes binding (A12)</td></tr>
+<tr><td>Audit entry for every transition</td><td>Accountability; the reviewer page shows the history</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>Condition 5: review is required before confirmation.</strong> The only path to CONFIRMED is <code>approve_request</code>, from PENDING. No other function sets CONFIRMED.</p></div>
+<h3>Assumption / trade-off</h3>
+<p><strong>Writers run one at a time:</strong> a second writer waits up to 5 s (SQLite's default timeout), which is fine for a campus and guarantees no double booking. <strong>A7:</strong> a pending request cannot be withdrawn, which keeps the state machine small.</p>
+<h3>How it was validated</h3>
+<ul>
+  <li><strong>End-to-end:</strong> submit → approve → cancel, then the same slot can be booked again; submit → reject, then another organiser books.</li>
+  <li><strong>Invalid transitions:</strong> all four review combinations after a decision, cancel while pending, cancel twice, wrong requester. Each time the status is unchanged afterwards.</li>
+  <li><strong>Rollback test:</strong> a monkey-patched failure in <code>log_action</code> leaves no event row.</li>
+  <li><strong>Manual two-connection check:</strong> while another connection held the lock, a submit waited 5.5 s and failed with "database is locked", writing nothing; after release it succeeded.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI's approval re-ran <code>validate_request</code>, so a pending request always conflicts with itself. You switched it to <code>check_availability(…, exclude_event_id=event.id)</code> and added <code>test_approve_does_not_conflict_with_itself</code>.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Can a rejected request be approved later?</summary><div class="a"><p>No. <code>_require_pending</code> refuses it, and the test matrix <code>test_only_pending_requests_can_be_reviewed</code> covers all four combinations.</p></div></details>
+<details class="qa"><summary>What happens if the app crashes halfway through an approval?</summary><div class="a"><p>Nothing is saved. The status change, audit entry and notification are in one transaction, so it rolls back as a whole.</p></div></details>
+<details class="qa"><summary>Why might approval find a conflict at all?</summary><div class="a"><p>Normally it can't: submit already prevents conflicts and PENDING holds the slot. The re-check guards against data entered by any path that bypassed the service. A test inserts a block directly to prove the approval is then refused.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> you use M2's rules and M1's <code>transaction()</code>. M4 and M5 call your services from the UI. M6 added the notify hooks inside your transactions.</p>
+
+<!-- ================================================================ M4 -->
+<h2 id="m4">M4 · Streamlit app and Requester experience</h2>
+<div class="member-head"><strong>sandesh62874</strong><span class="pill">Step 4</span><span class="pill">a79fd35</span><span class="pill">127 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>app.py</code></td><td><code>@st.cache_resource connection(path)</code> (created + seeded on first use); <code>CEMS_DB_PATH</code> override; sidebar role radio (<code>key="role"</code>) and a name field per role (<code>actor_REQUESTER</code>, …); page routing</td></tr>
+<tr><td><code>ui/requester.py</code></td><td><strong>New request</strong> form with a live pre-check and a venue-day overview; <strong>My requests</strong> with counts, badges, rejection reasons and Cancel</td></tr>
+<tr><td><code>ui/common.py</code></td><td><code>status_badge</code>, <code>venue_label</code>, <code>set_flash</code> / <code>show_flash</code>, <code>show_messages</code>, <code>event_summary</code>. Reused by every later page</td></tr>
+<tr><td>Tests</td><td><code>test_app_requester.py</code> (12): headless <code>AppTest</code>, a temporary DB per test</td></tr>
+</table></div>
+
+<h3>How it works</h3>
+<h4>1. Live pre-check (condition 3)</h4>
+<p>Streamlit re-runs the whole script whenever a widget changes. With <strong>plain widgets</strong> (not <code>st.form</code>), every change re-runs <code>rules.validate_request</code>:</p>
+<pre><code>reasons = rules.validate_request(conn, title=..., venue_id=..., start=..., end=..., attendees=...)
+if reasons: st.error("This request cannot be submitted yet:\n" + bullets)
+else:       st.success(f"{venue} is available for {window}.")
+st.button("Submit request", disabled=bool(reasons), on_click=_submit, args=(...))</code></pre>
+<p>A conflicting request <strong>cannot</strong> be submitted: the button is disabled. The service still re-checks in case the slot was taken between the page loading and the click.</p>
+<h4>2. Writes in <code>on_click</code> callbacks + flash messages</h4>
+<p>Callbacks run <em>before</em> the next rerun, so they can safely reset widget state (clearing the title after a submit) and queue a message with <code>set_flash</code>, which <code>show_flash</code> shows exactly once at the top of the page.</p>
+<h4>3. One cached connection</h4>
+<p><code>@st.cache_resource</code> keeps one SQLite connection per database path across reruns and sessions. That's why M1 set <code>check_same_thread=False</code>. Tests point <code>CEMS_DB_PATH</code> at a temporary file, so each test is isolated.</p>
+<h4>4. My requests</h4>
+<p>Your requests are filtered by the sidebar name, case-insensitively. Active requests come first, then by start time. Rejected requests show their reason. Confirmed events have <strong>Cancel event</strong>, which calls <code>cancel_event(…, Role.REQUESTER)</code>.</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th><th>Cost</th></tr>
+<tr><td>Plain widgets, not <code>st.form</code></td><td>Validation is live, as condition 3 requires</td><td>The page re-runs on every change (cheap here)</td></tr>
+<tr><td>Sidebar name = organiser (A16)</td><td>No login needed for the demo</td><td>Anyone can act as any club</td></tr>
+<tr><td>One date + two times (A15)</td><td>Simple form; fits the 12-hour limit</td><td>No overnight events</td></tr>
+<tr><td>Form opens on 4 Aug 2026 (A17)</td><td>Demo scenarios are one click away</td><td>Not "today"</td></tr>
+<tr><td>Stable <code>key=</code> on every widget</td><td>AppTest can drive the real UI</td><td>none</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>Condition 3: a conflicting request is prevented before it is submitted</strong>, through the live check and the disabled Submit button.</p></div>
+<h3>How it was validated</h3>
+<ul>
+  <li>12 AppTest UI tests: live overlap, renovation and capacity errors with Submit disabled; a valid submit becomes PENDING and the title clears; the slot is held after submitting; AI Club cancels its seeded event; a blank-name warning; the other roles render.</li>
+  <li>The real server: <code>/_stcore/health</code> returned <code>ok</code>, and the page returned HTTP 200.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI built the form with <code>st.form</code>, so conflicts only appeared after pressing Submit, which breaks condition 3. You rebuilt it with plain widgets and a disabled Submit.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>If the button is disabled, why does the service validate again?</summary><div class="a"><p>The page can be out of date: another user may book the slot after your page rendered. The service check runs inside the locked transaction, so it is the one that is guaranteed correct. The UI check is for user experience.</p></div></details>
+<details class="qa"><summary>How do the UI tests work without a browser?</summary><div class="a"><p>Streamlit's <code>AppTest</code> runs <code>app.py</code> headless. Tests set widget values by <code>key</code>, click buttons, re-run the script, and check the rendered elements (errors, success messages, disabled buttons) and the database.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> you call M2's rules and M3's services. M5 adds pages to your router and reuses <code>ui/common.py</code>. M6 adds an Inbox tab to your page.</p>
+
+<!-- ================================================================ M5 -->
+<h2 id="m5">M5 · Reviewer and Facilities Manager</h2>
+<div class="member-head"><strong>ishank-kapania</strong><span class="pill">Step 5</span><span class="pill">e1f2255</span><span class="pill">151 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>cems/venue_service.py</code></td><td><code>BLOCK_REASONS</code>; <code>add_block(conn, venue_id, start, end, reason)</code>; <code>remove_block(conn, block_id)</code>. Plus <code>repository.delete_block</code></td></tr>
+<tr><td><code>ui/reviewer.py</code></td><td>Tabs: <strong>Pending review</strong> (Approve, Reject + reason, History), <strong>Confirmed</strong> (Cancel any), <strong>All requests</strong> (table)</td></tr>
+<tr><td><code>ui/facilities.py</code></td><td>Tabs: <strong>Venues &amp; blocks</strong> (venue table, blocks with Remove), <strong>Block a venue</strong> (form + live clash warning)</td></tr>
+<tr><td><code>app.py</code></td><td>Routes all roles through <code>PAGES</code>; sidebar <strong>Reset demo data</strong></td></tr>
+<tr><td>Tests</td><td><code>test_blocks.py</code> (14), <code>test_app_reviewer_facilities.py</code> (10)</td></tr>
+</table></div>
+
+<h3>How it works</h3>
+<h4>1. <code>add_block</code></h4>
+<pre><code>problems: reason required; both times; end &gt; start      → BookingError (no 12-hour limit: A18)
+with transaction(conn, immediate=True):
+    venue must exist
+    clashes = repo.find_overlapping_events(conn, venue.id, start, end)   # PENDING + CONFIRMED
+    if clashes: BookingError(["Cannot block X for …: cancel or reject these active bookings first.",
+                              "#1 'Intro to ML Workshop' by AI Club, 04 Aug 2026 10:00–12:00 (CONFIRMED)"])
+    repo.insert_block(...)</code></pre>
+<h4>2. Reviewer page</h4>
+<ul>
+  <li>For each pending request, the page runs <code>check_availability(…, exclude_event_id)</code>, the same check approval uses. If the slot is gone, <strong>Approve is disabled</strong> and the reason is shown (A20).</li>
+  <li><strong>Reject</strong> stays disabled until a reason is typed.</li>
+  <li>Each card has an expandable <strong>History</strong> from the audit log.</li>
+  <li>The Confirmed tab lets the Events Office cancel any event (<code>Role.REVIEWER</code>).</li>
+</ul>
+<h4>3. Facilities page</h4>
+<p>The form takes a venue, from-date and time, to-date and time, a reason (Maintenance / Renovation / Other) and optional details, stored as <code>"Maintenance: Projector replacement"</code>. A live warning lists bookings in the way before clicking. <strong>Remove block</strong> reopens the venue immediately (A19).</p>
+<h4>4. Reset demo data</h4>
+<p>A sidebar button calls <code>reset_db</code>, which clears every table (including notifications, added later) and re-seeds.</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th></tr>
+<tr><td>Block refused over PENDING <em>and</em> CONFIRMED (A5)</td><td>Otherwise a venue could be booked and blocked at once, which breaks condition 2</td></tr>
+<tr><td>Blocks may span days (A18)</td><td>Renovations take days; the 12-hour limit is for events</td></tr>
+<tr><td>Blocks can be removed (A19)</td><td>The brief's pain point: venues "remaining unavailable"</td></tr>
+<tr><td>Disable Approve and Reject when invalid</td><td>The reviewer sees the problem before clicking; the service enforces it anyway</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>Condition 4 + A5: a venue can be blocked, but never over an active booking.</strong> <code>add_block</code> lists the bookings in the way, which must be cancelled or rejected first.</p></div>
+<h3>Assumption / trade-off</h3>
+<p>Blocks are <strong>not</strong> in the audit log (it tracks events only), so there's no record of who blocked a venue. The schema stayed unchanged; this is listed as a next step.</p>
+<h3>How it was validated</h3>
+<ul>
+  <li><strong>Service tests:</strong> free slot; multi-day; refused over CONFIRMED and PENDING; adjacency allowed; reject or cancel frees the slot for a block; a request inside a block is refused; removal reopens; input validation.</li>
+  <li><strong>UI tests:</strong> approve; reject disabled until a reason; reviewer cancel; Approve disabled after a direct DB block; Facilities add, refuse and remove; reset.</li>
+  <li><strong>Multi-role run in one session:</strong> submit → approve → block refused → cancel → block accepted.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI's <code>add_block</code> only checked CONFIRMED events, so a block could cover a PENDING request that might later be approved into a blocked slot. It now checks both active statuses, with <code>test_block_over_pending_request_is_refused</code>.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Why can't Facilities just override a booking?</summary><div class="a"><p>That would silently break a confirmed commitment. Making Facilities go through cancel (which notifies the organiser) keeps people informed and keeps condition 2 true.</p></div></details>
+<details class="qa"><summary>Can a block start exactly when an event ends?</summary><div class="a"><p>Yes. It uses the same half-open overlap rule (<code>test_block_adjacent_to_booking_is_allowed</code>).</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> you use M3's services and M2's <code>check_availability</code>. M6 adds an Inbox tab to your reviewer page.</p>
+
+<!-- ================================================================ M6 -->
+<h2 id="m6">M6 · Bonus feature: in-app notifications</h2>
+<div class="member-head"><strong>VanshMotwani</strong><span class="pill">Step 6</span><span class="pill">e8b5886</span><span class="pill">168 tests at handover</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>cems/db.py</code></td><td><code>notifications</code> table (<code>recipient … COLLATE NOCASE</code>, <code>is_read</code>, <code>event_id</code>), index on (recipient, is_read), added to <code>TABLES_CHILD_FIRST</code></td></tr>
+<tr><td><code>cems/notifications.py</code></td><td><code>REVIEWER_INBOX</code>; <code>notify</code>, <code>list_for</code> (newest first, <code>unread_only</code>), <code>unread_count</code>, <code>mark_read</code>, <code>mark_all_read</code>. Plus the <code>Notification</code> model</td></tr>
+<tr><td><code>cems/services.py</code></td><td>Notify hooks in all four transitions</td></tr>
+<tr><td><code>ui/inbox.py</code></td><td>Inbox tab: <code>tab_label</code> ("Inbox (2 new)"), NEW badges, Mark all as read. Used on the Requester and Reviewer pages</td></tr>
+<tr><td>Tests</td><td><code>test_notifications.py</code> (13), <code>test_app_inbox.py</code> (4)</td></tr>
+</table></div>
+
+<h3>Why this bonus</h3>
+<p>It directly targets two pain points from the brief: <strong>"limited visibility into request status"</strong> (organisers learn the outcome, including the rejection reason) and <strong>"delays in reviewing and confirming events"</strong> (reviewers learn the moment a request arrives).</p>
+
+<h3>Who gets what</h3>
+<div class="tablewrap"><table>
+<tr><th>Trigger</th><th>Recipient</th><th>Example message</th></tr>
+<tr><td>Submit</td><td>Reviewer inbox</td><td>New request #3 'Tech Talk' at Main Auditorium, 05 Aug 2026 14:00–16:00 from Coding Club is waiting for review.</td></tr>
+<tr><td>Approve</td><td>Organiser</td><td>Your request #3 … was approved by Events Office. It is now CONFIRMED.</td></tr>
+<tr><td>Reject</td><td>Organiser</td><td>… was rejected by Events Office: Clashes with exams. To revise it, submit a new request.</td></tr>
+<tr><td>Cancel by the Reviewer</td><td>Organiser</td><td>Your event … was cancelled by Events Office (Events Office).</td></tr>
+<tr><td>Cancel by the organiser</td><td>Reviewer inbox</td><td>AI Club cancelled #1 … The venue is free again.</td></tr>
+</table></div>
+
+<h3>How it works: the key point</h3>
+<div class="callout good"><p><strong>A23: a notification exists if and only if its change happened.</strong> <code>notify()</code> never commits; it runs <em>inside</em> the service's <code>BEGIN IMMEDIATE</code> transaction. A refused action raises before notify, so nothing is sent. If the notification insert fails, the status change rolls back too.</p></div>
+<p><strong>Recipients:</strong> organiser names, matched case-insensitively by <code>COLLATE NOCASE</code> (consistent with A9), or the shared <code>"Reviewer"</code> role inbox (A21).</p>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th><th>Cost</th></tr>
+<tr><td>Same-transaction notifications</td><td>Never a notification about a change that didn't happen, nor a change with no notification</td><td>A notification-store failure blocks the transition (correct here)</td></tr>
+<tr><td>Shared reviewer inbox (A21)</td><td>No accounts exist; a small office shares one queue</td><td>Reading marks it read for everyone</td></tr>
+<tr><td>In-app only (A22)</td><td>The brief forbids external services</td><td>Not pushed by email or SMS</td></tr>
+<tr><td>Notify the <em>other</em> party on cancel</td><td>The person who cancelled already knows</td><td>none</td></tr>
+</table></div>
+<h3>How it was validated</h3>
+<ul>
+  <li><strong>Store:</strong> ordering, case-insensitivity, per-recipient counts, mark read.</li>
+  <li><strong>Hooks:</strong> exact text per transition; correct recipients on both cancel paths; the full lifecycle produces 2 reviewer and 1 organiser notifications.</li>
+  <li><strong>Failure:</strong> failed or refused actions send nothing; a broken <code>notify</code> rolls back the approval; reset clears notifications.</li>
+  <li><strong>UI:</strong> approve on the Reviewer page → the Requester's inbox shows "Inbox (1 new)"; mark all read.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI proposed saving notifications separately, after the change, "so a notification failure can't block an approval". That allows notifications for changes that were rolled back. You kept them in the same transaction and added <code>test_notification_rolls_back_with_its_transition</code>.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Why not email?</summary><div class="a"><p>The brief rules out external services. Email is the first enhancement once SSO provides real addresses.</p></div></details>
+<details class="qa"><summary>How would this scale to real users?</summary><div class="a"><p>Replace the name-based recipient with a user id from SSO, give each reviewer their own inbox, and add delivery channels (email, push) that read from the same table.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> you hooked into M3's services, M1's schema and reset, and M4's and M5's pages.</p>
+
+<!-- ================================================================ M7 -->
+<h2 id="m7">M7 · Campus schedule, final validation and pitch</h2>
+<div class="member-head"><strong>Souradeep Das</strong><span class="pill">Step 7</span><span class="pill">bc20723</span><span class="pill">182 tests final</span></div>
+
+<h3>What you built</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>ui/schedule.py</code></td><td>Public <strong>Campus schedule</strong>: a day timeline (Altair), with one row per venue coloured by state; a free-all-day list; a toggle for released requests; a commitments table; all confirmed events</td></tr>
+<tr><td><code>app.py</code></td><td>"Campus schedule" sidebar entry that needs no name</td></tr>
+<tr><td><code>tests/test_acceptance.py</code></td><td>S1–S12 acceptance scenarios + 2 schedule tests, each clicked through in one session</td></tr>
+<tr><td><code>docs/TEST_SCENARIOS.md</code></td><td>Scenario table with results, coverage by layer, extra checks</td></tr>
+<tr><td><code>docs/PITCH.md</code></td><td>The two-slide consulting pitch</td></tr>
+<tr><td><code>README.md</code></td><td>Scope (in and out), trade-offs table, known limitations, next steps, pitch link</td></tr>
+<tr><td><code>requirements.txt</code></td><td>Pinned <code>altair</code> and <code>pandas</code>, which the schedule imports directly</td></tr>
+</table></div>
+
+<h3>How it works</h3>
+<ul>
+  <li><strong>The schedule shows only what holds a venue</strong>, PENDING, CONFIRMED and blocks, by default. That's the same definition the conflict check uses, so what people see is exactly what blocks a booking (A24).</li>
+  <li><strong>Every venue gets a row on the y-axis</strong>, so <em>free</em> venues are visible, plus a "Free all day" summary.</li>
+  <li><strong>Colours use the reserved status palette:</strong> confirmed = green, pending = amber, blocked = red. State is never shown by colour alone: there's always a legend, a tooltip and the table.</li>
+</ul>
+<h4>The acceptance scenarios</h4>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Scenario</th><th>ID</th><th>Scenario</th></tr>
+<tr><td>S1</td><td>Happy path end to end, with notification</td><td>S7</td><td>Reject releases the slot</td></tr>
+<tr><td>S2</td><td>Overlap blocked before submit</td><td>S8</td><td>Cancel releases the slot</td></tr>
+<tr><td>S3</td><td>Renovation block</td><td>S9</td><td>Block over a booking refused</td></tr>
+<tr><td>S4</td><td>Capacity exceeded</td><td>S10</td><td>Removing a block reopens the venue</td></tr>
+<tr><td>S5</td><td>Invalid time window</td><td>S11</td><td>Campus schedule contents</td></tr>
+<tr><td>S6</td><td>Back-to-back allowed</td><td>S12</td><td>Demo reset</td></tr>
+</table></div>
+
+<h3>Decisions you took</h3>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Why</th></tr>
+<tr><td>A single-day timeline</td><td>Matches how conflicts are checked; readable with 5 venues</td></tr>
+<tr><td>Automated acceptance scenarios, not manual-only</td><td>The demo scenarios are proven on every run, not just once</td></tr>
+<tr><td>Released requests hidden by default</td><td>The schedule shows commitments; history is one toggle away</td></tr>
+</table></div>
+
+<h3>Business rule you own</h3>
+<div class="callout good"><p><strong>Visibility: the campus sees each venue's real commitments</strong>, using exactly the definition the conflict check uses.</p></div>
+<h3>How it was validated</h3>
+<ul>
+  <li>Pulled Step 6 and ran 168 tests.</li>
+  <li>Final <code>pytest -q -W default</code> → <strong>182 passed, no warnings</strong>.</li>
+  <li>The schedule tests check the actual table contents: 4 Aug has 1 CONFIRMED and 1 BLOCKED, and Main Auditorium is free all day.</li>
+  <li>Corrected test counts in the M5 and M6 notes against <code>pytest --collect-only</code>.</li>
+</ul>
+<h3>AI suggestion you corrected</h3>
+<p>The AI's timeline only plotted venues with bookings, which hid the free ones. You fixed the y-axis to list every venue and added the free-all-day summary.</p>
+<h3>Likely questions</h3>
+<details class="qa"><summary>Why is the schedule public?</summary><div class="a"><p>Event titles and organisers are public on campus, and visibility was a pain point in the brief. Personal data such as notifications stays on the role pages.</p></div></details>
+<details class="qa"><summary>How do you know the demo will work?</summary><div class="a"><p>Every demo scenario is an automated acceptance test that drives the real UI. All 12 passed on the final build.</p></div></details>
+<p class="meta"><strong>Your neighbours:</strong> you validated all six earlier steps end to end, and you present both pitch slides.</p>
+
+<h2 id="checklist">Before the demo: checklist</h2>
+<ul class="checklist">
+  <li>Everyone has run <code>pytest -q</code> (182 passed) and <code>streamlit run app.py</code> at least once</li>
+  <li>Each member can answer the five evaluator questions for their step (sections above)</li>
+  <li>Each member knows assumptions A1, A4, A5, A6 and A7</li>
+  <li>Click <strong>Reset demo data</strong> just before presenting</li>
+  <li>The browser is zoomed so the sidebar and the form fit on one screen</li>
+  <li>If the Windows firewall popup appears, click Cancel</li>
+</ul>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById("themeToggle");
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem("cems-guide-theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  btn.addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("cems-guide-theme", next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
