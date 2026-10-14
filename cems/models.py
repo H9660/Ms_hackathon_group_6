@@ -33,6 +33,14 @@ class Status(str, Enum):
 # because conflict checks only consider these.
 ACTIVE_STATUSES: tuple[Status, ...] = (Status.PENDING, Status.CONFIRMED)
 
+class Role(str, Enum):
+    """Who is acting. There is no authentication; the UI selects a role."""
+
+    REQUESTER = "Requester"
+    REVIEWER = "Reviewer"
+    FACILITIES = "Facilities Manager"
+
+
 EVENT_TYPES: list[str] = [
     "Workshop",
     "Hackathon",

@@ -43,11 +43,11 @@ pytest -q
 
 ```
 cems/
-  models.py       domain types: Status, Venue, Event, VenueBlock, AuditEntry
+  models.py       domain types: Status, Role, Venue, Event, VenueBlock, AuditEntry
   db.py           SQLite connection, schema, transaction() helper
   repository.py   data access (rows <-> dataclasses); no business rules
   seed.py         initial campus data + reset; CLI entry point
-  rules.py        business validations                       (Step 2)
+  rules.py        business validations; returns readable reasons
   services.py     request lifecycle / state transitions      (Step 3)
 ui/               Streamlit pages                            (Steps 4-7)
 tests/            pytest suite; each test uses a fresh in-memory DB
@@ -66,13 +66,15 @@ docs/             assumptions, pitch, contribution notes
 
 The event titles and organisers are our additions; the brief only says "Confirmed event".
 
-## Design notes (Step 1)
+## Design notes
 
 - **Times are stored as `YYYY-MM-DDTHH:MM` text.** Text in this format sorts in time order, so SQL range and overlap checks work directly on the stored values. Times have minute precision.
 - **Status values are restricted by the database.** A `CHECK` constraint only allows `PENDING`, `CONFIRMED`, `REJECTED` and `CANCELLED`. Further `CHECK` constraints enforce `end > start`, `capacity > 0` and `attendees > 0`, as a final safety net below the business rules.
 - **Foreign keys are switched on** for every connection.
 - **Transactions:** connections run in autocommit mode. Any multi-step or check-then-write operation uses `with transaction(conn, immediate=True):`, so it either fully happens or fully rolls back.
 - **Audit log:** every event has a history of actions. Seeded events start with a `SEEDED` entry.
+- **Rules only read.** `rules.validate_request` returns every problem as a readable message (an empty list means valid). The UI can therefore run it live before submission, and services re-run it when writing.
+- **Overlap uses half-open intervals:** `start < other.end AND other.start < end`, so back-to-back bookings are allowed. Only PENDING and CONFIRMED events hold a venue.
 - **Seeding is idempotent:** running the seed again does nothing if venues already exist. `--reset` restores the demo state.
 
 ## Team
@@ -87,4 +89,5 @@ The event titles and organisers are our additions; the brief only says "Confirme
 | 6 | M6 | Bonus: notifications |
 | 7 | M7 | Schedule view, documentation, pitch |
 
-Contribution notes: [docs/contributions/](docs/contributions/)
+- Assumptions and business rules: [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md)
+- Contribution notes: [docs/contributions/](docs/contributions/)

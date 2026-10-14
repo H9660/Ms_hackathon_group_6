@@ -41,6 +41,8 @@ ui/*  ->  services.py  ->  rules.py  ->  repository.py  ->  db.py  ->  models.py
 - Datetimes: Python `datetime` in code; `models.to_db` / `from_db` (`YYYY-MM-DDTHH:MM`) at the DB boundary. DB columns are `start_at` / `end_at` (`end` is an SQL keyword).
 - Overlap test (half-open intervals): `a.start < b.end AND b.start < a.end`. Back-to-back bookings are allowed. Never use `<=`.
 - Only `ACTIVE_STATUSES` (PENDING, CONFIRMED) hold a venue. Rejecting or cancelling releases it automatically.
+- When re-checking an existing request (e.g. on approval), call `rules.check_availability(..., exclude_event_id=event.id)` so it does not conflict with itself.
+- Roles are `models.Role`. The assumptions are listed in `docs/ASSUMPTIONS.md`; update that file when you add a new one.
 - Always use parameterised SQL (`?` placeholders). Never build SQL from user input with f-strings.
 - Tests use the `conn` fixture (in-memory DB plus seed data) or `empty_conn` (schema only) from `tests/conftest.py`.
 - Type hints on all public functions; `from __future__ import annotations` at the top of each module.

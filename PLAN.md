@@ -106,12 +106,14 @@ get_conn(path="cems.db") -> Connection;  init_db(conn);  seed(conn);  reset_db(c
 list_venues, get_venue, list_events(status=None, organiser=None), get_event,
 insert_event -> id, update_status(event_id, status, reason=None), list_blocks(venue_id=None),
 insert_block -> id, log_action(event_id, action, actor, detail=""), get_history(event_id)
-find_overlapping_events(conn, venue_id, start, end) -> list[Event]       # active only (Step 2)
+find_overlapping_events(conn, venue_id, start, end, exclude_event_id=None) -> list[Event]  # active only (Step 2)
 find_overlapping_blocks(conn, venue_id, start, end) -> list[VenueBlock]  # (Step 2)
 
 # cems/rules.py                                    (Step 2)
 validate_request(conn, title, organiser, event_type, venue_id, start, end, attendees) -> list[str]
 can_cancel(event, actor_name, actor_role) -> list[str]
+check_availability(conn, venue, start, end, exclude_event_id=None) -> list[str]   # overlap + blocks; Step 3 approve re-check
+# models.Role: REQUESTER="Requester", REVIEWER="Reviewer", FACILITIES="Facilities Manager"   (added in Step 2)
 
 # cems/services.py                                 (Step 3)
 class BookingError(Exception): reasons: list[str]

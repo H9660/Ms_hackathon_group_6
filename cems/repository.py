@@ -7,8 +7,18 @@ writes in :func:`cems.db.transaction`.
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime
 
-from cems.models import AuditEntry, Event, Status, Venue, VenueBlock, from_db, to_db
+from cems.models import (
+    ACTIVE_STATUSES,
+    AuditEntry,
+    Event,
+    Status,
+    Venue,
+    VenueBlock,
+    from_db,
+    to_db,
+)
 
 
 class NotFoundError(LookupError):
@@ -113,6 +123,33 @@ def list_events(
     return [_to_event(r) for r in rows]
 
 
+def find_overlapping_events(
+    conn: sqlite3.Connection,
+    venue_id: int,
+    start: datetime,
+    end: datetime,
+    exclude_event_id: int | None = None,
+) -> list[Event]:
+    """Active (PENDING/CONFIRMED) events at a venue that overlap [start, end).
+
+    Intervals are half-open, so back-to-back bookings do not overlap.
+    ``exclude_event_id`` skips one event, e.g. a pending request being
+    re-checked during approval must not conflict with itself.
+    """
+    placeholders = ", ".join("?" for _ in ACTIVE_STATUSES)
+    sql = (
+        "SELECT * FROM events "
+        f"WHERE venue_id = ? AND status IN ({placeholders}) "
+        "AND start_at < ? AND ? < end_at"
+    )
+    params: list[object] = [venue_id, *(s.value for s in ACTIVE_STATUSES), to_db(end), to_db(start)]
+    if exclude_event_id is not None:
+        sql += " AND id != ?"
+        params.append(exclude_event_id)
+    rows = conn.execute(sql + " ORDER BY start_at, id", params).fetchall()
+    return [_to_event(r) for r in rows]
+
+
 def get_event(conn: sqlite3.Connection, event_id: int) -> Event | None:
     row = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
     return _to_event(row) if row else None
@@ -170,6 +207,21 @@ def list_blocks(conn: sqlite3.Connection, venue_id: int | None = None) -> list[V
         rows = conn.execute(
             "SELECT * FROM venue_blocks WHERE venue_id = ? ORDER BY start_at, id", (venue_id,)
         ).fetchall()
+    return [_to_block(r) for r in rows]
+
+
+def find_overlapping_blocks(
+    conn: sqlite3.Connection,
+    venue_id: int,
+    start: datetime,
+    end: datetime,
+) -> list[VenueBlock]:
+    """Blocks at a venue that overlap [start, end) (half-open intervals)."""
+    rows = conn.execute(
+        "SELECT * FROM venue_blocks WHERE venue_id = ? AND start_at < ? AND ? < end_at "
+        "ORDER BY start_at, id",
+        (venue_id, to_db(end), to_db(start)),
+    ).fetchall()
     return [_to_block(r) for r in rows]
 
 
