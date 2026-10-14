@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CEMS Presentation</title>
+<title>CEMS Consulting Pitch</title>
 <style>
 :root {
-  --bg: #0f1115; --slide: #ffffff; --ink: #15161a; --ink-2: #464851; --muted: #7b7d86;
+  --bg: #0f1115; --slide: #ffffff; --ink: #15161a; --ink-2: #41434c; --muted: #7b7d86;
   --line: #e4e5ea; --soft: #f4f5f8; --accent: #2b5fd9; --accent-2: #e6edfc;
   --good: #0f7a0f; --good-soft: #e3f3e3; --warn: #8a5a00; --warn-soft: #fdf1d6;
   --bad: #b02a2a; --bad-soft: #fbe5e5;
@@ -31,365 +31,224 @@ html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden;
 .stage { position: fixed; inset: 0; display: grid; place-items: center; }
 /* 16:9 slide scaled to the viewport */
 .slide { position: absolute; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh);
-  background: var(--slide); padding: 4.2% 5.2% 5.5%; display: none; flex-direction: column;
-  font-size: min(1.55vw, 2.75vh); line-height: 1.45; overflow: hidden; }
-.slide.active { display: flex; animation: in .28s ease-out; }
-@keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  background: var(--slide); padding: 2.6% 3.4% 3.6%; display: none; flex-direction: column;
+  font-size: min(1.1vw, 1.95vh); line-height: 1.38; overflow: hidden; }
+.slide.active { display: flex; animation: in .25s ease-out; }
+@keyframes in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .slide.active { animation: none; } }
-.kicker { font-size: .78em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: .4em; }
-h1 { font-size: 2.9em; line-height: 1.08; margin: 0 0 .3em; letter-spacing: -.02em; }
-h2 { font-size: 2em; line-height: 1.15; margin: 0 0 .6em; letter-spacing: -.01em; }
-h3 { font-size: 1.05em; margin: 0 0 .35em; color: var(--ink); }
-p, li { color: var(--ink-2); margin: .2em 0; }
-ul { margin: .2em 0; padding-left: 1.1em; }
+header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 1em;
+  border-bottom: 2px solid var(--line); padding-bottom: .55em; margin-bottom: .9em; }
+.kicker { font-size: .9em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: 2.35em; line-height: 1.1; margin: .1em 0 0; letter-spacing: -.015em; }
+.meta { font-size: .95em; color: var(--muted); text-align: right; white-space: nowrap; }
+h3 { font-size: 1.12em; margin: 0 0 .35em; color: var(--ink); display: flex; align-items: center; gap: .45em; }
+h3 .n { display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: .78em; flex: none; }
+p, li { color: var(--ink-2); margin: .12em 0; }
+ul { margin: 0; padding-left: 1.05em; }
+li::marker { color: var(--muted); }
 strong { color: var(--ink); }
-code { font-family: ui-monospace, Consolas, monospace; font-size: .88em; background: var(--soft); padding: .05em .35em; border-radius: .25em; }
-.body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.cols { display: grid; gap: 1.1em; flex: 1; min-height: 0; }
-.c2 { grid-template-columns: 1fr 1fr; } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
-.box { background: var(--soft); border: 1px solid var(--line); border-radius: .6em; padding: .8em 1em; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; background: var(--soft); padding: 0 .3em; border-radius: .25em; }
+.grid { display: grid; gap: .8em; flex: 1; min-height: 0; }
+.g1 { grid-template-columns: 1.05fr 1fr 1.1fr; grid-template-rows: auto 1fr; }
+.g2 { grid-template-columns: 1.1fr 1fr 1fr; grid-template-rows: auto 1fr; }
+.box { background: var(--soft); border: 1px solid var(--line); border-radius: .6em; padding: .7em .85em; min-height: 0; }
 .box.accent { background: var(--accent-2); border-color: transparent; }
 .box.good { background: var(--good-soft); border-color: transparent; }
-.box p, .box li { font-size: .92em; }
-.big { font-size: 3em; font-weight: 800; line-height: 1; color: var(--ink); letter-spacing: -.02em; }
-.label { font-size: .82em; color: var(--muted); }
-.foot { position: absolute; left: 5.2%; right: 5.2%; bottom: 2.4%; display: flex; justify-content: space-between;
-  font-size: .68em; color: var(--muted); }
-.tag { display: inline-block; font-size: .72em; font-weight: 700; padding: .12em .6em; border-radius: 99em; }
+.span2 { grid-column: span 2; } .span3 { grid-column: span 3; }
+.personas { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55em; }
+.persona { background: var(--slide); border: 1px solid var(--line); border-radius: .5em; padding: .45em .6em; }
+.persona b { display: block; color: var(--ink); font-size: .98em; }
+.persona span { font-size: .88em; color: var(--ink-2); }
+.sm { display: flex; align-items: center; gap: .45em; flex-wrap: wrap; margin: .3em 0; }
+.st { padding: .2em .6em; border-radius: .4em; font-weight: 700; font-size: .88em; }
+.ed { font-size: .85em; color: var(--muted); }
 .t-p { background: var(--warn-soft); color: var(--warn); } .t-c { background: var(--good-soft); color: var(--good); }
-.t-r { background: var(--bad-soft); color: var(--bad); } .t-x { background: var(--soft); color: var(--muted); border: 1px solid var(--line); }
-table { width: 100%; border-collapse: collapse; font-size: .86em; }
-th, td { text-align: left; padding: .38em .6em; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { color: var(--muted); font-weight: 600; font-size: .9em; }
+.t-r { background: var(--bad-soft); color: var(--bad); } .t-x { background: var(--slide); color: var(--muted); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: .93em; }
+th, td { text-align: left; padding: .26em .45em; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: .92em; }
 td { color: var(--ink-2); }
-.pain { display: grid; grid-template-columns: 1fr auto 1fr; gap: .45em .9em; align-items: center; font-size: .9em; }
-.pain .arrow { color: var(--muted); }
-.pain .from { color: var(--ink-2); } .pain .to { color: var(--ink); font-weight: 600; }
-.sm { display: flex; align-items: center; gap: .6em; flex-wrap: wrap; margin: .5em 0; }
-.sm .st { padding: .45em .9em; border-radius: .5em; font-weight: 700; font-size: .95em; }
-.sm .ed { font-size: .78em; color: var(--muted); }
-.stack { display: flex; flex-direction: column; gap: .35em; }
-.stack .ly { display: grid; grid-template-columns: 9.5em 1fr; gap: .8em; align-items: center;
-  background: var(--soft); border: 1px solid var(--line); border-radius: .45em; padding: .45em .8em; font-size: .9em; }
-.stack .ly b { font-family: ui-monospace, Consolas, monospace; font-size: .92em; }
-.stack .ly span { color: var(--ink-2); }
-.stack .dn { text-align: center; color: var(--muted); font-size: .7em; line-height: .6; }
-.num { display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 50%;
-  background: var(--accent); color: #fff; font-weight: 700; font-size: .8em; margin-right: .5em; flex: none; }
-.step { display: flex; align-items: flex-start; margin: .35em 0; }
-.member { background: var(--soft); border: 1px solid var(--line); border-radius: .6em; padding: .7em .8em; }
-.member .who { font-weight: 700; color: var(--ink); font-size: .95em; }
-.member .what { font-size: .8em; color: var(--ink-2); }
-.member .m { font-size: .7em; font-weight: 700; color: var(--accent); letter-spacing: .08em; }
-.title-slide { justify-content: center; }
-.title-slide .sub { font-size: 1.3em; color: var(--ink-2); max-width: 36em; }
-.pillrow { display: flex; gap: .5em; flex-wrap: wrap; margin-top: 1.4em; }
-.pill { font-size: .8em; padding: .3em .8em; border-radius: 99em; border: 1px solid var(--line); color: var(--ink-2); background: var(--soft); }
+tr:last-child td { border-bottom: none; }
+.layers { display: flex; flex-direction: column; gap: .22em; margin: .25em 0 .45em; }
+.ly { display: grid; grid-template-columns: 7.6em 1fr; gap: .6em; align-items: center; background: var(--slide);
+  border: 1px solid var(--line); border-radius: .4em; padding: .25em .55em; font-size: .93em; }
+.ly b { font-family: ui-monospace, Consolas, monospace; font-size: .92em; color: var(--ink); }
+.ly span { color: var(--ink-2); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .45em; margin: .2em 0 .45em; }
+.stat { background: var(--slide); border: 1px solid var(--line); border-radius: .45em; padding: .35em .5em; }
+.stat b { display: block; font-size: 1.9em; line-height: 1.05; color: var(--ink); letter-spacing: -.02em; }
+.stat span { font-size: .82em; color: var(--muted); }
+.foot { display: flex; justify-content: space-between; font-size: .82em; color: var(--muted); margin-top: .65em; }
 .controls { position: fixed; right: 14px; bottom: 12px; display: flex; gap: 6px; z-index: 5; opacity: .35; transition: opacity .2s; }
 .controls:hover, .controls:focus-within { opacity: 1; }
 .controls button { font: 13px system-ui, sans-serif; padding: 6px 10px; border-radius: 6px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
-.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--accent); z-index: 5; transition: width .25s; }
 .hint { position: fixed; left: 14px; bottom: 12px; font: 12px system-ui, sans-serif; color: #888; opacity: .6; z-index: 5; }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   html, body { overflow: auto; height: auto; }
   .stage { position: static; display: block; padding: 12px 0; }
-  .slide { position: relative; display: flex !important; width: 100%; height: auto; min-height: 0; margin: 0 0 12px;
-    font-size: 14px; padding: 22px 16px 40px; animation: none !important; }
-  .c2, .c3, .c4 { grid-template-columns: 1fr; }
-  .pain { grid-template-columns: 1fr; } .pain .arrow { display: none; }
-  .stack .ly { grid-template-columns: 1fr; }
+  .slide { position: relative; display: flex !important; width: 100%; height: auto; margin: 0 0 12px;
+    font-size: 14px; padding: 20px 16px; animation: none !important; }
+  .g1, .g2 { grid-template-columns: 1fr; grid-template-rows: none; }
+  .span2, .span3 { grid-column: auto; }
+  .personas, .stats { grid-template-columns: 1fr 1fr; }
+  header.top { flex-direction: column; } .meta { text-align: left; white-space: normal; }
   .controls, .hint { display: none; }
-  table { display: block; overflow-x: auto; }
+}
+@media print {
+  html, body { overflow: visible; height: auto; background: #fff; }
+  .stage { position: static; display: block; }
+  .slide { position: relative; display: flex !important; width: 100%; height: auto; aspect-ratio: 16 / 9; break-after: page; font-size: 10pt; }
+  .controls, .hint { display: none; }
 }
 </style>
 </head>
 <body>
-<div class="progress" id="progress"></div>
-<div class="stage" id="stage">
+<div class="stage">
 
-<!-- 1 · Title -->
-<section class="slide title-slide">
-  <div class="kicker">IIIT Hackathon Challenge · Group 6</div>
-  <h1>Campus Event<br>Management System</h1>
-  <p class="sub">From a venue request to a confirmed, conflict-free event, with every rule enforced and every decision explained.</p>
-  <div class="pillrow">
-    <span class="pill">Python + Streamlit + SQLite</span><span class="pill">4 personas</span>
-    <span class="pill">10/10 brief conditions</span><span class="pill">182 automated tests</span><span class="pill">7 members · 7 steps</span>
-  </div>
-  <div class="foot"><span>Campus Event Management System</span><span>1</span></div>
-</section>
-
-<!-- 2 · Problem -->
+<!-- ============================================================ SLIDE 1 -->
 <section class="slide">
-  <div class="kicker">Problem understanding</div>
-  <h2>Messages and spreadsheets don't scale</h2>
-  <div class="body">
-    <div class="pain">
-      <span class="from">Conflicting venue requests</span><span class="arrow">→</span><span class="to">Overlap check before submit, using one rule</span>
-      <span class="from">Venues picked without checking capacity</span><span class="arrow">→</span><span class="to">Capacity validated, with a clear reason</span>
-      <span class="from">No visibility of request status</span><span class="arrow">→</span><span class="to">Status badges, history, notifications</span>
-      <span class="from">Slow review and confirmation</span><span class="arrow">→</span><span class="to">Reviewer queue + new-request alerts</span>
-      <span class="from">Venues stuck after cancellations</span><span class="arrow">→</span><span class="to">Reject and cancel release the slot instantly</span>
-      <span class="from">Maintenance and renovation downtime</span><span class="arrow">→</span><span class="to">Venue blocks, removable when work ends</span>
-      <span class="from">Stakeholders need different views</span><span class="arrow">→</span><span class="to">Role pages + a public campus schedule</span>
+  <header class="top">
+    <div><div class="kicker">Slide 1 · Problem Understanding</div>
+      <h1>Campus events need one reliable path from request to decision</h1></div>
+    <div class="meta">Campus Event Management System<br>Group 6 · IIIT Hackathon</div>
+  </header>
+
+  <div class="grid g1">
+    <div class="box span3">
+      <h3><span class="n">1</span>The problem &amp; stakeholders</h3>
+      <p>Events are coordinated through messages and spreadsheets. That causes <strong>conflicting venue requests</strong>, venues chosen <strong>without checking capacity</strong>, <strong>no visibility of request status</strong>, <strong>slow reviews</strong>, venues <strong>stuck after cancellations</strong>, and <strong>maintenance downtime</strong> nobody can see.</p>
+      <div class="personas" style="margin-top:.45em">
+        <div class="persona"><b>Requester</b><span>Club, faculty, placement cell. Requests a venue, tracks the outcome, cancels their own event</span></div>
+        <div class="persona"><b>Event Reviewer</b><span>Events Office. Approves, or rejects with a reason; can cancel any confirmed event</span></div>
+        <div class="persona"><b>Facilities Manager</b><span>Blocks venues for maintenance or renovation; lifts blocks</span></div>
+        <div class="persona"><b>Campus community</b><span>Sees each venue's schedule and which venues are free</span></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3><span class="n">2</span>Workflows prioritised</h3>
+      <div class="sm"><span class="st t-x">Request</span><span class="ed">checks pass →</span><span class="st t-p">PENDING</span><span class="ed">approve →</span><span class="st t-c">CONFIRMED</span><span class="ed">cancel →</span><span class="st t-x">CANCELLED</span></div>
+      <div class="sm"><span class="st t-p">PENDING</span><span class="ed">reject + reason →</span><span class="st t-r">REJECTED</span><span class="ed">closed</span></div>
+      <ul style="margin-top:.35em">
+        <li><strong>The full lifecycle:</strong> submit → review → confirm or reject → cancel</li>
+        <li><strong>Venue blocking</strong> for maintenance and renovation</li>
+        <li><strong>A campus-wide schedule</strong> so everyone can see availability</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h3><span class="n">3</span>Business rules discovered</h3>
+      <ul>
+        <li>Only <strong>PENDING and CONFIRMED</strong> hold a venue; rejecting or cancelling releases it</li>
+        <li>Two bookings clash when each starts before the other ends (<code>new.start &lt; old.end ∧ old.start &lt; new.end</code>)</li>
+        <li>Conflicts, blocks, capacity and bad times are stopped <strong>before submit</strong>, each with a clear reason</li>
+        <li><strong>Review is mandatory</strong>; a rejected request is closed, and a revision means a new request</li>
+        <li><strong>Only the organiser or the Events Office</strong> can cancel; a block can't cover an active booking</li>
+      </ul>
+    </div>
+
+    <div class="cols" style="display:grid;grid-template-rows:auto 1fr;gap:.8em;min-height:0">
+      <div class="box">
+        <h3><span class="n">4</span>Key assumptions <span style="font-weight:400;color:var(--muted);font-size:.85em">(24 documented)</span></h3>
+        <ul>
+          <li><strong>Back-to-back bookings</strong> (12:00 end, 12:00 start) are allowed</li>
+          <li><strong>1 ≤ attendees ≤ capacity</strong>; at most 12 h per event, on one day</li>
+          <li><strong>Past dates are allowed</strong>, because the brief's data is in Aug 2026</li>
+          <li><strong>No login:</strong> a role selector stands in for it (auth is optional)</li>
+        </ul>
+      </div>
+      <div class="box good">
+        <h3><span class="n">5</span>Scope for 90 minutes</h3>
+        <p><strong>In:</strong> the full lifecycle, all conflict and failure handling, 3 role views + a public schedule, and a bonus (notifications).</p>
+        <p><strong>Out:</strong> partial or split bookings and suggestions (brief), editing requests (condition 6), SSO, recurring events, email.</p>
+      </div>
     </div>
   </div>
-  <div class="foot"><span>Pain points from the brief → our answer</span><span>2</span></div>
+  <div class="foot"><span>Initial data: 5 venues · Seminar Hall A booked 4 Aug 10–12 · Conference Room C renovation 4 Aug 09–18 · Innovation Lab booked 6 Aug 14–17</span><span>1 / 2</span></div>
 </section>
 
-<!-- 3 · Personas & workflows -->
+<!-- ============================================================ SLIDE 2 -->
 <section class="slide">
-  <div class="kicker">Problem understanding</div>
-  <h2>Who uses it, and the lifecycle we prioritised</h2>
-  <div class="body">
-    <div class="cols c4" style="flex:none">
-      <div class="box"><h3>Requester</h3><p>Club, faculty, placement cell. Requests a venue, tracks the outcome, cancels their own event.</p></div>
-      <div class="box"><h3>Event Reviewer</h3><p>Events Office. Approves, or rejects with a reason; can cancel any event.</p></div>
-      <div class="box"><h3>Facilities Manager</h3><p>Blocks venues for maintenance or renovation, and lifts blocks.</p></div>
-      <div class="box"><h3>Campus community</h3><p>Sees each venue's day and the free venues.</p></div>
-    </div>
-    <div style="margin-top:1.3em">
-      <div class="sm"><span class="st box">New request</span><span class="ed">submit · all checks pass →</span>
-        <span class="st t-p">PENDING</span><span class="ed">approve →</span><span class="st t-c">CONFIRMED</span>
-        <span class="ed">cancel →</span><span class="st t-x">CANCELLED</span></div>
-      <div class="sm"><span class="st t-p">PENDING</span><span class="ed">reject · reason required →</span>
-        <span class="st t-r">REJECTED</span><span class="ed">closed; a revision is a new request</span></div>
-      <p style="margin-top:.8em"><strong>Only PENDING and CONFIRMED hold a venue.</strong> Rejecting or cancelling frees it just by changing the status. Nothing is deleted, so the history is kept.</p>
-    </div>
-  </div>
-  <div class="foot"><span>Personas &amp; lifecycle</span><span>3</span></div>
-</section>
+  <header class="top">
+    <div><div class="kicker">Slide 2 · Solution &amp; Engineering Decisions</div>
+      <h1>A layered Python app where every rule is enforced and tested</h1></div>
+    <div class="meta">Python · Streamlit · SQLite<br>Runs locally · no external services</div>
+  </header>
 
-<!-- 4 · Business rules -->
-<section class="slide">
-  <div class="kicker">Problem understanding</div>
-  <h2>Business rules we enforce</h2>
-  <div class="body">
-    <table>
-      <tr><th style="width:8%">#</th><th style="width:42%">Rule</th><th>How</th></tr>
-      <tr><td>1</td><td>Start, end and venue are required</td><td>Validation + a database <code>CHECK (end &gt; start)</code></td></tr>
-      <tr><td>2</td><td>No overlapping active bookings</td><td>Two bookings overlap when each starts before the other ends: <code>new.start &lt; old.end ∧ old.start &lt; new.end</code>. Back-to-back is allowed</td></tr>
-      <tr><td>3</td><td>Conflicts prevented <em>before</em> submit</td><td>Live check on every change; Submit disabled; re-checked on save</td></tr>
-      <tr><td>4</td><td>Maintenance and renovation blocks</td><td>Blocks count as unavailability; a block can't cover an active booking</td></tr>
-      <tr><td>5–6</td><td>Review is required; rejection closes and releases</td><td>The only path to CONFIRMED is approval from PENDING; no edit path</td></tr>
-      <tr><td>7–8</td><td>The right people can cancel; cancelling releases</td><td>The organiser or the Events Office, confirmed events only</td></tr>
-      <tr><td>10</td><td>A clear reason when a request can't proceed</td><td><em>"Seminar Hall A is already booked 04 Aug 2026 10:00–12:00 for '…' (CONFIRMED)."</em></td></tr>
-    </table>
-  </div>
-  <div class="foot"><span>Condition 9 (no partial or split bookings, no suggestions) is deliberately out of scope</span><span>4</span></div>
-</section>
-
-<!-- 5 · Assumptions & scope -->
-<section class="slide">
-  <div class="kicker">Problem understanding</div>
-  <h2>Key assumptions and the scope we chose for 90 minutes</h2>
-  <div class="body"><div class="cols c2">
-    <div class="box"><h3>Key assumptions (24 documented)</h3><ul>
-      <li><strong>Half-open intervals:</strong> a booking ending at 12:00 and one starting at 12:00 don't clash</li>
-      <li><strong>Attendees must fit:</strong> 1 ≤ attendees ≤ capacity; at most 12 h per event</li>
-      <li><strong>Past dates are allowed:</strong> the brief's data is in Aug 2026</li>
-      <li><strong>A block can't cover an active booking:</strong> cancel first</li>
-      <li><strong>No login:</strong> a role selector stands in for authentication</li>
-      <li><strong>Strict transitions:</strong> only PENDING can be reviewed; only CONFIRMED can be cancelled</li></ul></div>
-    <div class="cols" style="grid-template-rows:auto auto;gap:.8em">
-      <div class="box good"><h3>In scope</h3><ul>
-        <li>Full request → review → cancel lifecycle</li>
-        <li>Conflict, block, capacity and time validation</li>
-        <li>Three role views + a public schedule</li>
-        <li>Bonus: in-app notifications</li></ul></div>
-      <div class="box"><h3>Out of scope</h3><ul>
-        <li>Partial or split bookings and suggestions (brief)</li>
-        <li>Editing requests (by design: condition 6)</li>
-        <li>SSO, recurring events, email or calendar</li></ul></div>
+  <div class="grid g2">
+    <div class="box">
+      <h3><span class="n">1</span>High-level approach</h3>
+      <div class="layers">
+        <div class="ly"><b>ui/</b><span>Streamlit page per role; live validation as you type</span></div>
+        <div class="ly"><b>services</b><span>State machine: the only place status changes</span></div>
+        <div class="ly"><b>rules</b><span>Read-only checks that return readable reasons</span></div>
+        <div class="ly"><b>repository</b><span>SQL ↔ data classes; never commits</span></div>
+        <div class="ly"><b>SQLite</b><span>Schema with CHECK and foreign-key constraints</span></div>
+      </div>
+      <p><strong>Bonus:</strong> in-app notifications. Reviewers learn about new requests; organisers learn the outcome, including the rejection reason.</p>
     </div>
-  </div></div>
-  <div class="foot"><span>Full list: docs/ASSUMPTIONS.md</span><span>5</span></div>
-</section>
 
-<!-- 6 · Architecture -->
-<section class="slide">
-  <div class="kicker">Solution</div>
-  <h2>A layered architecture, so every part can be tested and explained</h2>
-  <div class="body"><div class="cols c2" style="grid-template-columns:1.25fr 1fr">
-    <div class="stack">
-      <div class="ly"><b>ui/ + app.py</b><span>Streamlit pages per role; writes only through services</span></div><div class="dn">▼</div>
-      <div class="ly"><b>services</b><span>State machine: the only place status changes</span></div><div class="dn">▼</div>
-      <div class="ly"><b>rules</b><span>Validation: read-only, returns readable reasons</span></div><div class="dn">▼</div>
-      <div class="ly"><b>repository</b><span>SQL ↔ dataclasses; no business rules, never commits</span></div><div class="dn">▼</div>
-      <div class="ly"><b>db + models</b><span>SQLite schema with constraints; enums and dataclasses</span></div>
+    <div class="box accent">
+      <h3><span class="n">2</span>Key design decisions</h3>
+      <ul>
+        <li><strong>All-or-nothing operations.</strong> Each change locks the database for writing (<code>BEGIN IMMEDIATE</code>) <em>before</em> its checks run, so two people can't book the same slot. The check, the write, the history entry and the notification succeed or fail together</li>
+        <li><strong>Releasing is a status change.</strong> Nothing is deleted, so the full history is kept</li>
+        <li><strong>Checked three times:</strong> live in the form, again by the service when saving, then by database constraints</li>
+        <li><strong>Approval re-checks availability</strong> at the moment the booking becomes binding</li>
+      </ul>
     </div>
-    <div class="box accent"><h3>Why these choices</h3><ul>
-      <li><strong>Python + Streamlit:</strong> a real UI in minutes; runs locally</li>
-      <li><strong>SQLite:</strong> comes with Python; gives transactions, constraints and foreign keys, which JSON can't</li>
-      <li><strong>Rules return reasons:</strong> the same checks power the live form, the save and the reviewer warning</li>
-      <li><strong>No external services</strong>, as the brief requires</li></ul></div>
-  </div></div>
-  <div class="foot"><span>Each layer imports only from the layers below it</span><span>6</span></div>
-</section>
 
-<!-- 7 · Engineering decisions -->
-<section class="slide">
-  <div class="kicker">Solution</div>
-  <h2>Engineering decisions and trade-offs</h2>
-  <div class="body"><div class="cols c2">
-    <div>
-      <div class="step"><span class="num">1</span><div><strong>All-or-nothing operations.</strong> Each change locks the database for writing (<code>BEGIN IMMEDIATE</code>) <em>before</em> its checks run, so two people can't book the same slot at once. The check, the write, the history entry and the notification succeed or fail together.</div></div>
-      <div class="step"><span class="num">2</span><div><strong>Releasing is a status change.</strong> The overlap query counts only PENDING and CONFIRMED, so nothing is deleted and the full history is kept.</div></div>
-      <div class="step"><span class="num">3</span><div><strong>Defence in depth.</strong> Live UI check → the service re-checks inside the lock → database constraints.</div></div>
-      <div class="step"><span class="num">4</span><div><strong>Re-check on approval</strong>, so a booking is valid at the moment it becomes binding.</div></div>
-    </div>
-    <div class="box"><h3>Trade-offs we accepted</h3>
+    <div class="box">
+      <h3><span class="n">3</span>Key trade-offs</h3>
       <table>
-        <tr><th>Choice</th><th>Cost</th></tr>
+        <tr><th>Choice</th><th>Cost we accepted</th></tr>
         <tr><td>No login</td><td>Anyone can act as anyone</td></tr>
-        <tr><td>One writer at a time</td><td>Others wait up to 5 s</td></tr>
-        <tr><td>Live validation</td><td>The page re-runs on each change</td></tr>
-        <tr><td>Shared reviewer inbox</td><td>Read state is shared</td></tr>
+        <tr><td>One writer at a time</td><td>Others wait (up to 5 s)</td></tr>
+        <tr><td>Live validation</td><td>The page re-runs on every change</td></tr>
+        <tr><td>Shared reviewer inbox</td><td>Read state shared by all reviewers</td></tr>
         <tr><td>Single-day events</td><td>No overnight or recurring events</td></tr>
-      </table></div>
-  </div></div>
-  <div class="foot"><span>Solution &amp; engineering decisions</span><span>7</span></div>
-</section>
-
-<!-- 8 · Live demo -->
-<section class="slide">
-  <div class="kicker">Live demo</div>
-  <h2>What we'll show</h2>
-  <div class="body"><div class="cols c2">
-    <div class="box good"><h3>✅ The happy path, end to end</h3>
-      <div class="step"><span class="num">1</span><div><strong>Requester:</strong> Main Auditorium · 5 Aug 2026 · 14:00–16:00 · 300 people → "available" → Submit → <span class="tag t-p">PENDING</span></div></div>
-      <div class="step"><span class="num">2</span><div><strong>Reviewer:</strong> the inbox shows the new request → Approve → <span class="tag t-c">CONFIRMED</span></div></div>
-      <div class="step"><span class="num">3</span><div><strong>Requester:</strong> the inbox says "approved by Events Office"</div></div>
-      <div class="step"><span class="num">4</span><div><strong>Campus schedule:</strong> the booking appears on the venue timeline</div></div>
-    </div>
-    <div class="box"><h3>⛔ Conflicts and failures, all stopped with a reason</h3>
-      <ul>
-        <li>Seminar Hall A, 4 Aug, 11:00–13:00: <strong>already booked</strong></li>
-        <li>Conference Room C, 4 Aug: <strong>renovation</strong></li>
-        <li>Innovation Lab, 80 people: <strong>holds 60</strong></li>
-        <li>End before start: <strong>invalid time</strong></li>
-        <li>Seminar Hall A, 12:00–14:00: <strong>allowed</strong> (back-to-back)</li>
-        <li>A block over a confirmed event is <strong>refused</strong>; cancel → the slot frees → the block succeeds</li>
-      </ul></div>
-  </div></div>
-  <div class="foot"><span>Every scenario here is also an automated acceptance test (S1–S12)</span><span>8</span></div>
-</section>
-
-<!-- 9 · Bonus -->
-<section class="slide">
-  <div class="kicker">Bonus feature</div>
-  <h2>In-app notifications, plus a public campus schedule</h2>
-  <div class="body"><div class="cols c2">
-    <div class="box accent"><h3>Notifications target two pain points</h3>
-      <p><strong>"Limited visibility of request status"</strong> and <strong>"delays in review"</strong>.</p>
-      <table>
-        <tr><th>When</th><th>Who hears</th></tr>
-        <tr><td>Request submitted</td><td>Reviewer inbox</td></tr>
-        <tr><td>Approved / rejected (with the reason)</td><td>Organiser</td></tr>
-        <tr><td>Cancelled</td><td>The other party</td></tr>
       </table>
-      <p style="margin-top:.6em">Each notification is saved <strong>in the same transaction</strong> as its change: no notice for a change that didn't happen.</p></div>
-    <div class="box"><h3>Campus schedule</h3>
+    </div>
+
+    <div class="box span2">
+      <h3><span class="n">4</span>Testing &amp; validation</h3>
+      <div class="stats">
+        <div class="stat"><b>182</b><span>automated tests, all passing</span></div>
+        <div class="stat"><b>38</b><span>business-rule tests (exact messages)</span></div>
+        <div class="stat"><b>26</b><span>UI tests on the real Streamlit app</span></div>
+        <div class="stat"><b>12</b><span>end-to-end demo scenarios automated</span></div>
+      </div>
       <ul>
-        <li>A day timeline with <strong>every venue</strong> as a row, so free venues stand out</li>
-        <li>Colour by state (<span class="tag t-c">CONFIRMED</span> <span class="tag t-p">PENDING</span> <span class="tag t-r">BLOCKED</span>), plus a legend, tooltip and table, so state never depends on colour alone</li>
-        <li>A "Free all day" list and every confirmed event</li>
-        <li>Shows exactly what the conflict check counts</li>
-      </ul></div>
-  </div></div>
-  <div class="foot"><span>Bonus feature</span><span>9</span></div>
-</section>
-
-<!-- 10 · Testing -->
-<section class="slide">
-  <div class="kicker">Testing &amp; validation</div>
-  <h2>182 automated tests, and the checks behind them</h2>
-  <div class="body">
-    <div class="cols c4" style="flex:none">
-      <div class="box"><div class="big">182</div><div class="label">tests, all passing, ~8 s</div></div>
-      <div class="box"><div class="big">38</div><div class="label">business-rule tests, exact messages</div></div>
-      <div class="box"><div class="big">26</div><div class="label">UI tests driving the real Streamlit app</div></div>
-      <div class="box"><div class="big">12</div><div class="label">end-to-end acceptance scenarios</div></div>
+        <li><strong>Mutation check:</strong> we deliberately changed the overlap query's <code>&lt;</code> to <code>&lt;=</code>, and 3 tests failed. <strong>Concurrency check:</strong> with a second writer holding the lock, nothing was written twice. <strong>Rollback tests:</strong> injected failures undo the whole change</li>
+        <li><strong>AI was directed, then checked:</strong> each member caught a real AI mistake, e.g. an overlap check using <code>&lt;=</code>, or a form that only validated after submit</li>
+      </ul>
     </div>
-    <div class="cols c3" style="margin-top:1em">
-      <div class="box"><h3>Mutation check</h3><p>We changed the overlap query's <code>&lt;</code> to <code>&lt;=</code> on purpose: 3 tests failed. The tests catch the classic back-to-back bug.</p></div>
-      <div class="box"><h3>Concurrency check</h3><p>While a second connection held the write lock, a submit waited, then failed cleanly with nothing written.</p></div>
-      <div class="box"><h3>Rollback tests</h3><p>Failures injected mid-operation (history log, notification store) undo the whole transition.</p></div>
+
+    <div class="cols" style="display:grid;grid-template-rows:auto 1fr;gap:.8em;min-height:0">
+      <div class="box">
+        <h3><span class="n">5</span>Known limitations</h3>
+        <ul>
+          <li>No real identity; single-day events only</li>
+          <li>In-app notifications only; blocks have no history</li>
+          <li>Local time; SQLite suits a single campus</li>
+        </ul>
+      </div>
+      <div class="box good">
+        <h3><span class="n">6</span>What we'd improve next</h3>
+        <ul>
+          <li>SSO with per-person permissions and inboxes</li>
+          <li>Email and <code>.ics</code> calendar export</li>
+          <li>Recurring events, analytics, venue suggestions</li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div class="foot"><span>Every step was validated by the next member before building on it</span><span>10</span></div>
-</section>
-
-<!-- 11 · AI usage -->
-<section class="slide">
-  <div class="kicker">AI-assisted engineering</div>
-  <h2>We directed the AI, then checked its work</h2>
-  <div class="body">
-    <p style="margin-bottom:.8em">The interface contract and rules came first, and the AI coded against them. Each member then caught and fixed a real AI mistake:</p>
-    <table>
-      <tr><th style="width:24%">Area</th><th>What the AI got wrong → our fix</th></tr>
-      <tr><td>Overlap rule</td><td>Used <code>&lt;=</code>, which blocks back-to-back bookings → strict <code>&lt;</code> + a mutation check</td></tr>
-      <tr><td>Request form</td><td>Used <code>st.form</code>, so conflicts only appeared after submit → live validation</td></tr>
-      <tr><td>Approval</td><td>Re-validated the full request, so a request conflicted with itself → excluded the request from its own check</td></tr>
-      <tr><td>Venue blocks</td><td>Only checked CONFIRMED events → also blocks over PENDING are refused</td></tr>
-      <tr><td>Notifications</td><td>Saved outside the transaction → same transaction + a rollback test</td></tr>
-      <tr><td>Seed / schedule</td><td>Changed shared global data; hid free venues → fixed and tested</td></tr>
-    </table>
-  </div>
-  <div class="foot"><span>Each member's correction is recorded in docs/contributions/</span><span>11</span></div>
-</section>
-
-<!-- 12 · Limits & next -->
-<section class="slide">
-  <div class="kicker">Looking ahead</div>
-  <h2>Known limitations and what we'd build next</h2>
-  <div class="body"><div class="cols c2">
-    <div class="box"><h3>Known limitations</h3><ul>
-      <li>No real identity: anyone can type any name</li>
-      <li>Single-day events, at most 12 h; no recurring events</li>
-      <li>Notifications in-app only; one shared reviewer inbox</li>
-      <li>Venue blocks have no history</li>
-      <li>Local time only; SQLite suits one campus</li></ul></div>
-    <div class="box good"><h3>Next steps</h3>
-      <div class="step"><span class="num">1</span><div>SSO login with per-person permissions and inboxes</div></div>
-      <div class="step"><span class="num">2</span><div>Email notifications + <code>.ics</code> calendar export</div></div>
-      <div class="step"><span class="num">3</span><div>Recurring and multi-day events</div></div>
-      <div class="step"><span class="num">4</span><div>Utilisation analytics per venue and event type</div></div>
-      <div class="step"><span class="num">5</span><div>Alternative-venue suggestions on conflict</div></div></div>
-  </div></div>
-  <div class="foot"><span>Limitations &amp; next steps</span><span>12</span></div>
-</section>
-
-<!-- 13 · Team -->
-<section class="slide">
-  <div class="kicker">The team</div>
-  <h2>7 members, 7 steps, one commit each</h2>
-  <div class="body">
-    <div class="cols c4" style="grid-template-rows:auto auto;gap:.7em">
-      <div class="member"><div class="m">STEP 1</div><div class="who">Vivek</div><div class="what">Data model, SQLite schema, seed data, repository</div></div>
-      <div class="member"><div class="m">STEP 2</div><div class="who">H9660</div><div class="what">Business rules, overlap and block detection</div></div>
-      <div class="member"><div class="m">STEP 3</div><div class="who">shobhan-iiit</div><div class="what">Lifecycle state machine and transactions</div></div>
-      <div class="member"><div class="m">STEP 4</div><div class="who">sandesh62874</div><div class="what">Streamlit app, request form with live check</div></div>
-      <div class="member"><div class="m">STEP 5</div><div class="who">ishank-kapania</div><div class="what">Reviewer queue, facilities venue blocking</div></div>
-      <div class="member"><div class="m">STEP 6</div><div class="who">VanshMotwani</div><div class="what">Bonus: in-app notifications</div></div>
-      <div class="member"><div class="m">STEP 7</div><div class="who">Souradeep Das</div><div class="what">Campus schedule, acceptance tests, pitch</div></div>
-      <div class="member" style="background:var(--accent-2);border-color:transparent"><div class="m">PROCESS</div><div class="who">Pull → validate → build → test → push</div><div class="what">Each member validated the previous step before building on it</div></div>
-    </div>
-  </div>
-  <div class="foot"><span>github.com/H9660/Ms_hackathon_group_6</span><span>13</span></div>
-</section>
-
-<!-- 14 · Thanks -->
-<section class="slide title-slide">
-  <div class="kicker">Thank you</div>
-  <h1>Questions?</h1>
-  <p class="sub">Try any scenario live: the system will tell you whether it can be booked, and exactly why not if it can't.</p>
-  <div class="pillrow"><span class="pill">streamlit run app.py</span><span class="pill">pytest -q → 182 passed</span><span class="pill">docs/ · assumptions, scenarios, pitch</span></div>
-  <div class="foot"><span>Campus Event Management System · Group 6</span><span>14</span></div>
+  <div class="foot"><span>Built in 7 incremental steps by 7 members, each validating the previous step · github.com/H9660/Ms_hackathon_group_6</span><span>2 / 2</span></div>
 </section>
 
 </div>
-<div class="hint">← → / Space to navigate · F fullscreen · D theme</div>
+<div class="hint">← → to switch slides · F fullscreen · D theme · Ctrl+P to print / PDF</div>
 <div class="controls">
   <button type="button" id="prev" aria-label="Previous slide">◀</button>
   <button type="button" id="next" aria-label="Next slide">▶</button>
@@ -398,12 +257,10 @@ td { color: var(--ink-2); }
 <script>
 (function () {
   var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
-  var bar = document.getElementById("progress");
   var i = 0;
   function show(n) {
     i = Math.max(0, Math.min(slides.length - 1, n));
     slides.forEach(function (s, k) { s.classList.toggle("active", k === i); });
-    bar.style.width = ((i + 1) / slides.length * 100) + "%";
     if (location.hash !== "#" + (i + 1)) history.replaceState(null, "", "#" + (i + 1));
   }
   function fullscreen() {
