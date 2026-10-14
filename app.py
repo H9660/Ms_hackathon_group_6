@@ -14,8 +14,9 @@ import streamlit as st
 
 from cems.db import DEFAULT_DB_PATH, get_conn, init_db
 from cems.models import Role
-from cems.seed import seed
-from ui import requester
+from cems.seed import reset_db, seed
+from ui import facilities, requester, reviewer
+from ui.common import set_flash
 
 DEFAULT_ACTORS = {
     Role.REQUESTER: "Coding Club",
@@ -33,6 +34,18 @@ def connection(path: str) -> sqlite3.Connection:
     return conn
 
 
+PAGES = {
+    Role.REQUESTER: requester.render,
+    Role.REVIEWER: reviewer.render,
+    Role.FACILITIES: facilities.render,
+}
+
+
+def _reset(conn: sqlite3.Connection) -> None:
+    reset_db(conn)
+    set_flash("success", "Demo data reset to the initial campus data.")
+
+
 def main() -> None:
     st.set_page_config(page_title="Campus Event Management", page_icon="📅", layout="wide")
     conn = connection(os.environ.get("CEMS_DB_PATH", str(DEFAULT_DB_PATH)))
@@ -44,12 +57,16 @@ def main() -> None:
             "Your name / club", value=DEFAULT_ACTORS[role], key=f"actor_{role.name}"
         ).strip()
         st.caption("Prototype: no login. Choose a role and name to act as.")
+        st.divider()
+        st.button(
+            "Reset demo data",
+            key="reset_demo",
+            help="Delete all requests and blocks and reload the initial campus data.",
+            on_click=_reset,
+            args=(conn,),
+        )
 
-    if role is Role.REQUESTER:
-        requester.render(conn, actor)
-    else:
-        st.header(role.value)
-        st.info("This page is added in Step 5.")
+    PAGES[role](conn, actor)
 
 
 main()

@@ -49,6 +49,12 @@ Try these with the initial data:
 | Innovation Lab, 80 attendees | Blocked: holds 60 people |
 | Name **AI Club** → My requests | Seeded Seminar Hall A event, with a Cancel button |
 
+4. **Reviewer:** the *Pending review* tab lists each request with its history. **Approve** is disabled if the slot has become unavailable. **Reject** needs a reason. The *Confirmed* tab lets the Events Office cancel any event, and *All requests* shows every request with its status.
+5. **Facilities Manager:** see venues and current blocks, **Remove block** when work finishes, or **Block a venue** for maintenance, renovation or another restriction. Blocks may span several days. A block over an active booking is refused, and the bookings in the way are listed.
+6. **Reset demo data** in the sidebar restores the initial campus data at any time.
+
+**End-to-end demo:** as Requester, submit Main Auditorium on 5 Aug 2026, 14:00–16:00. As Reviewer, approve it. As Facilities, try to block that slot (refused). As Requester, cancel it. As Facilities, block the slot again (now allowed).
+
 ## Test
 
 ```bash
@@ -67,11 +73,14 @@ cems/
   seed.py         initial campus data + reset; CLI entry point
   rules.py        business validations; returns readable reasons
   services.py     request lifecycle: submit, approve, reject, cancel
+  venue_service.py  venue blocks: add (refused over active bookings) / remove
 app.py            Streamlit entry point: sidebar role/name selector, page routing
 ui/
   common.py       shared UI helpers (status badges, flash messages)
   requester.py    new request form with live validation; My requests
-  reviewer.py, facilities.py, schedule.py                    (Steps 5-7)
+  reviewer.py     pending queue (approve / reject), confirmed events (cancel), all requests
+  facilities.py   venue list, current blocks, block-a-venue form
+  schedule.py     campus-wide daily schedule                 (Step 7)
 tests/            pytest suite; each test uses a fresh in-memory DB
 docs/             assumptions, pitch, contribution notes
 ```

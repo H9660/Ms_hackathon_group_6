@@ -10,7 +10,7 @@ The brief allows teams to add assumptions as long as they are documented and app
 | A2 | Expected attendees must be between 1 and the venue capacity (inclusive). | The brief lists "venues selected without considering capacity" as a pain point. | `rules.validate_capacity` |
 | A3 | `end > start`, and an event lasts at most **12 hours**. Multi-day events are out of scope. | Catches input mistakes (e.g. AM/PM swaps). Long festivals can be booked as several requests. | `rules.validate_time_window` |
 | A4 | Requests for past dates are **not** rejected against the real clock. | The initial campus data is in Aug 2026. Rejecting past dates would make the brief's scenarios impossible to demo. | (no check, deliberately) |
-| A5 | A maintenance block cannot be placed over an active booking. The event must be cancelled first. | Keeps condition 2 true: a venue is never both booked and blocked. | `venue_service.add_block` (Step 5) |
+| A5 | A maintenance block cannot be placed over an active booking. The event must be cancelled first. | Keeps condition 2 true: a venue is never both booked and blocked. | `venue_service.add_block` |
 | A6 | No authentication. The acting role and name are chosen in the UI. | Prioritised the workflow over login within 90 minutes; the brief marks authentication as optional. | `models.Role`, UI sidebar |
 | A7 | Only `PENDING` requests can be approved or rejected. Only `CONFIRMED` events can be cancelled. A pending request cannot be withdrawn. | Keeps the state machine small and explainable. | `rules.can_cancel`, `services` (Step 3) |
 | A8 | Times are stored with **minute precision** and no time zone. | Single-campus system; ISO text keeps the SQL simple. | `models.to_db` / `from_db` |
@@ -23,6 +23,9 @@ The brief allows teams to add assumptions as long as they are documented and app
 | A15 | In the UI an event takes place on **a single date**: start and end time are on the chosen day. | Fits the 12-hour maximum (A3) and keeps the form simple. | `ui/requester.py` |
 | A16 | The requester's **organiser name is the name entered in the sidebar**. "My requests" and cancel rights use that name. | Follows from having no login (A6). | `app.py`, `ui/requester.py` |
 | A17 | The request form opens on **4 Aug 2026**. | That is the date of the initial campus data, so demo scenarios are one click away. | `ui/requester.DEFAULT_DATE` |
+| A18 | Venue blocks may **span several days** and have no 12-hour limit. | Renovations take days. The 12-hour limit (A3) applies only to events. | `venue_service.add_block` |
+| A19 | Facilities can **remove a block** (e.g. work finished early). The period immediately becomes bookable. | The brief notes venues "remaining unavailable" as a pain point. | `venue_service.remove_block` |
+| A20 | The Reviewer page **disables Approve** when the slot is no longer available, and shows why. The service enforces the same check. | Reviewers see the problem before they click. | `ui/reviewer.py`, `services.approve_request` |
 
 ## Brief conditions → implementation
 

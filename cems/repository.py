@@ -233,6 +233,12 @@ def insert_block(conn: sqlite3.Connection, block: VenueBlock) -> int:
     return cur.lastrowid
 
 
+def delete_block(conn: sqlite3.Connection, block_id: int) -> None:
+    cur = conn.execute("DELETE FROM venue_blocks WHERE id = ?", (block_id,))
+    if cur.rowcount == 0:
+        raise NotFoundError(f"Venue block {block_id} does not exist")
+
+
 # --------------------------------------------------------------------------
 # Audit log
 # --------------------------------------------------------------------------

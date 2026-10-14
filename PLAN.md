@@ -122,6 +122,7 @@ reject_request(conn, event_id, actor, reason);  cancel_event(conn, event_id, act
 
 # cems/venue_service.py                            (Step 5)
 add_block(conn, venue_id, start, end, reason) -> int    # BookingError if active events overlap
+remove_block(conn, block_id) -> None                    # added in Step 5
 
 # cems/notifications.py                            (Step 6)
 notify(conn, recipient, message);  list_for(conn, recipient);  unread_count(conn, recipient);  mark_read(conn, id)
