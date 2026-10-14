@@ -1,0 +1,90 @@
+# Campus Event Management System (CEMS)
+
+A locally runnable prototype for requesting, reviewing, confirming and cancelling campus events. It prevents venue conflicts, respects capacity, and handles maintenance and renovation blocks.
+
+Built for the IIIT Hackathon Challenge by a 7-member team. The work was done in 7 incremental steps, one member per step (see [PLAN.md](PLAN.md)).
+
+## Prerequisites
+
+- Python **3.10+** (developed on 3.13)
+- Git
+
+No cloud services, external APIs or database server are needed. Data lives in a local SQLite file, `cems.db`, which is created automatically.
+
+## Setup
+
+```bash
+git clone https://github.com/H9660/Ms_hackathon_group_6.git
+cd Ms_hackathon_group_6
+python -m venv .venv
+
+# Activate the virtual environment
+.venv\Scripts\activate          # Windows (PowerShell / cmd)
+source .venv/bin/activate       # macOS / Linux
+
+pip install -r requirements.txt
+```
+
+## Run
+
+```bash
+python -m cems.seed             # create cems.db and load the initial campus data
+python -m cems.seed --reset     # wipe all data back to the initial campus data
+streamlit run app.py            # web UI (available from Step 4)
+```
+
+## Test
+
+```bash
+pytest -q
+```
+
+## Project structure
+
+```
+cems/
+  models.py       domain types: Status, Venue, Event, VenueBlock, AuditEntry
+  db.py           SQLite connection, schema, transaction() helper
+  repository.py   data access (rows <-> dataclasses); no business rules
+  seed.py         initial campus data + reset; CLI entry point
+  rules.py        business validations                       (Step 2)
+  services.py     request lifecycle / state transitions      (Step 3)
+ui/               Streamlit pages                            (Steps 4-7)
+tests/            pytest suite; each test uses a fresh in-memory DB
+docs/             assumptions, pitch, contribution notes
+```
+
+## Initial campus data
+
+| Venue | Type | Capacity | Seeded state |
+|---|---|---|---|
+| Seminar Hall A | Seminar Hall | 120 | CONFIRMED "Intro to Machine Learning Workshop", 4 Aug 2026 10:00–12:00 |
+| Main Auditorium | Auditorium | 500 | Available |
+| Conference Room C | Conference Room | 40 | Blocked for renovation, 4 Aug 2026 09:00–18:00 |
+| Central Amphitheatre | Open Venue | 300 | Available |
+| Innovation Lab | Computer Lab | 60 | CONFIRMED "Placement Coding Assessment", 6 Aug 2026 14:00–17:00 |
+
+The event titles and organisers are our additions; the brief only says "Confirmed event".
+
+## Design notes (Step 1)
+
+- **Times are stored as `YYYY-MM-DDTHH:MM` text.** Text in this format sorts in time order, so SQL range and overlap checks work directly on the stored values. Times have minute precision.
+- **Status values are restricted by the database.** A `CHECK` constraint only allows `PENDING`, `CONFIRMED`, `REJECTED` and `CANCELLED`. Further `CHECK` constraints enforce `end > start`, `capacity > 0` and `attendees > 0`, as a final safety net below the business rules.
+- **Foreign keys are switched on** for every connection.
+- **Transactions:** connections run in autocommit mode. Any multi-step or check-then-write operation uses `with transaction(conn, immediate=True):`, so it either fully happens or fully rolls back.
+- **Audit log:** every event has a history of actions. Seeded events start with a `SEEDED` entry.
+- **Seeding is idempotent:** running the seed again does nothing if venues already exist. `--reset` restores the demo state.
+
+## Team
+
+| Step | Member | Area |
+|---|---|---|
+| 1 | M1 | Foundation: models, database, seed data, repository |
+| 2 | M2 | Business rules and conflict detection |
+| 3 | M3 | Workflow state machine |
+| 4 | M4 | Streamlit app and requester UI |
+| 5 | M5 | Reviewer and facilities UI |
+| 6 | M6 | Bonus: notifications |
+| 7 | M7 | Schedule view, documentation, pitch |
+
+Contribution notes: [docs/contributions/](docs/contributions/)

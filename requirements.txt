@@ -1,0 +1,5 @@
+# Runtime
+streamlit==1.65.0
+
+# Development / testing
+pytest==9.1.1
