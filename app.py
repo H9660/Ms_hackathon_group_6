@@ -15,7 +15,7 @@ import streamlit as st
 from cems.db import DEFAULT_DB_PATH, get_conn, init_db
 from cems.models import Role
 from cems.seed import reset_db, seed
-from ui import facilities, requester, reviewer
+from ui import facilities, requester, reviewer, schedule
 from ui.common import set_flash
 
 DEFAULT_ACTORS = {
@@ -33,6 +33,8 @@ def connection(path: str) -> sqlite3.Connection:
     seed(conn)
     return conn
 
+
+SCHEDULE = "Campus schedule"  # read-only view for everyone; needs no name
 
 PAGES = {
     Role.REQUESTER: requester.render,
@@ -52,10 +54,13 @@ def main() -> None:
 
     with st.sidebar:
         st.title("📅 Campus Events")
-        role = Role(st.radio("Acting as", [r.value for r in Role], key="role"))
-        actor = st.text_input(
-            "Your name / club", value=DEFAULT_ACTORS[role], key=f"actor_{role.name}"
-        ).strip()
+        choice = st.radio("Acting as", [r.value for r in Role] + [SCHEDULE], key="role")
+        role = None if choice == SCHEDULE else Role(choice)
+        actor = ""
+        if role is not None:
+            actor = st.text_input(
+                "Your name / club", value=DEFAULT_ACTORS[role], key=f"actor_{role.name}"
+            ).strip()
         st.caption("Prototype: no login. Choose a role and name to act as.")
         st.divider()
         st.button(
@@ -66,7 +71,10 @@ def main() -> None:
             args=(conn,),
         )
 
-    PAGES[role](conn, actor)
+    if role is None:
+        schedule.render(conn)
+    else:
+        PAGES[role](conn, actor)
 
 
 main()

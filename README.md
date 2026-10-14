@@ -51,7 +51,8 @@ Try these with the initial data:
 
 4. **Reviewer:** the *Pending review* tab lists each request with its history. **Approve** is disabled if the slot has become unavailable. **Reject** needs a reason. The *Confirmed* tab lets the Events Office cancel any event, and *All requests* shows every request with its status.
 5. **Facilities Manager:** see venues and current blocks, **Remove block** when work finishes, or **Block a venue** for maintenance, renovation or another restriction. Blocks may span several days. A block over an active booking is refused, and the bookings in the way are listed.
-6. **Reset demo data** in the sidebar restores the initial campus data at any time.
+6. **Campus schedule** (sidebar, no name needed): pick a day and see each venue's timeline (confirmed, pending, blocked), which venues are free all day, and every confirmed event.
+7. **Reset demo data** in the sidebar restores the initial campus data at any time.
 
 **End-to-end demo:** as Requester, submit Main Auditorium on 5 Aug 2026, 14:00–16:00. As Reviewer, approve it. As Facilities, try to block that slot (refused). As Requester, cancel it. As Facilities, block the slot again (now allowed).
 
@@ -60,6 +61,8 @@ Try these with the initial data:
 ```bash
 pytest -q
 ```
+
+182 tests cover models, DB constraints, seed data, overlap boundaries, every business rule, the state machine, blocks, notifications, every UI page, and 12 end-to-end acceptance scenarios. See [docs/TEST_SCENARIOS.md](docs/TEST_SCENARIOS.md).
 
 The suite includes headless UI tests (`tests/test_app_*.py`) using Streamlit's `AppTest`. Each test gets its own temporary database through `CEMS_DB_PATH`.
 
@@ -82,9 +85,13 @@ ui/
   reviewer.py     pending queue (approve / reject), confirmed events (cancel), all requests
   facilities.py   venue list, current blocks, block-a-venue form
   inbox.py        notification inbox tab (Requester and Reviewer)
-  schedule.py     campus-wide daily schedule                 (Step 7)
+  schedule.py     campus-wide day timeline, free venues, confirmed events
 tests/            pytest suite; each test uses a fresh in-memory DB
-docs/             assumptions, pitch, contribution notes
+docs/
+  ASSUMPTIONS.md  assumptions A1-A24 and how the brief's conditions map to code
+  TEST_SCENARIOS.md  acceptance scenarios S1-S12 and their results
+  PITCH.md        two-slide consulting pitch
+  contributions/  one note per team member
 ```
 
 ## Event lifecycle
@@ -147,6 +154,53 @@ The event titles and organisers are our additions; the brief only says "Confirme
 - **Rules only read.** `rules.validate_request` returns every problem as a readable message (an empty list means valid). The UI can therefore run it live before submission, and services re-run it when writing.
 - **Overlap uses half-open intervals:** `start < other.end AND other.start < end`, so back-to-back bookings are allowed. Only PENDING and CONFIRMED events hold a venue.
 - **Seeding is idempotent:** running the seed again does nothing if venues already exist. `--reset` restores the demo state.
+
+## Scope
+
+**Prioritised (in scope)**
+- **Full request lifecycle:** submit → review (approve / reject with reason) → cancel, with guarded transitions and an audit history.
+- **Conflict prevention before submit:** overlaps, maintenance / renovation blocks, capacity and time window, each with a clear reason.
+- **Facilities venue blocking:** refused over active bookings; blocks can be removed.
+- **Three role views:** Requester, Reviewer, Facilities Manager. Plus a public campus schedule.
+- **Bonus:** in-app notifications.
+
+**Excluded (by brief or by choice)**
+- Partial or split bookings and automatic alternative-venue suggestions (excluded by the brief, condition 9).
+- Editing a request. By design: a revision is a new request (condition 6).
+- Authentication / SSO; recurring and multi-day events; email or calendar integration; time zones.
+
+## Trade-offs
+
+| Decision | Benefit | Cost |
+|---|---|---|
+| No login; a role selector instead (A6) | All 90 minutes went into the workflow and rules | Anyone can act as anyone |
+| SQLite with `BEGIN IMMEDIATE` per operation | Check and write are atomic; no double booking | One writer at a time; others wait up to 5 s |
+| Live validation with plain widgets, not `st.form` | Conflicts shown before submit (condition 3) | The page re-runs on every change |
+| Venues released by changing status, never deleting | Full history kept; simple release logic | The table grows over time |
+| One shared reviewer inbox (A21) | Works without accounts | Reading it marks it read for all reviewers |
+
+## Known limitations
+
+- No real identity: the organiser is whatever name is typed (A16).
+- Events last at most 12 hours on one date (A3, A15).
+- Blocks are not in the audit log.
+- Notifications are in-app only.
+- Single-campus local time, minute precision (A8).
+- SQLite suits one campus. It is not built for heavy concurrent use.
+
+## Next steps
+
+1. SSO login, with per-person inboxes and permissions.
+2. Email notifications and `.ics` calendar export.
+3. Recurring and multi-day events.
+4. Utilisation analytics per venue and event type.
+5. Alternative-venue suggestions when a request conflicts.
+6. Review targets with escalation.
+7. An audit trail for venue blocks.
+
+## Consulting pitch
+
+See [docs/PITCH.md](docs/PITCH.md): Slide 1 covers problem understanding, Slide 2 the solution and engineering decisions.
 
 ## Team
 
