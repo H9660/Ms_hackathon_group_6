@@ -47,4 +47,7 @@ ui/*  ->  services.py  ->  rules.py  ->  repository.py  ->  db.py  ->  models.py
 - Tests use the `conn` fixture (in-memory DB plus seed data) or `empty_conn` (schema only) from `tests/conftest.py`.
 - Type hints on all public functions; `from __future__ import annotations` at the top of each module.
 - Commit messages: `<type>(<area>): <message>`. Types: feat, fix, test, docs, chore, refactor.
+- UI pages expose `render(conn, actor)` and are routed from `app.py`. Shared helpers live in `ui/common.py`: `status_badge`, `set_flash` / `show_flash`, `show_messages`.
+- Perform UI writes in button `on_click` callbacks and report results with `set_flash`. Callbacks run before the rerun, so they can safely reset widget state.
+- Give every widget a stable `key=` so `AppTest` can target it. UI tests use `AppTest.from_file` with `CEMS_DB_PATH` set to a temporary file (see `tests/test_app_requester.py`).
 - Each step adds `docs/contributions/mN.md`.

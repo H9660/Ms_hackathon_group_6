@@ -30,14 +30,32 @@ pip install -r requirements.txt
 ```bash
 python -m cems.seed             # create cems.db and load the initial campus data
 python -m cems.seed --reset     # wipe all data back to the initial campus data
-streamlit run app.py            # web UI (available from Step 4)
+streamlit run app.py            # web UI at http://localhost:8501 (creates and seeds cems.db on first run)
 ```
+
+## Using the app
+
+1. Run `streamlit run app.py`. In the sidebar, choose **Acting as → Requester** and enter your name or club (default: *Coding Club*).
+2. **New request:** fill in the title, type, venue, date, times and attendees. The page checks the request **as you type**: conflicts, renovation blocks, capacity and time problems are listed in red, and **Submit** stays disabled until there are none. The panel above the button lists what already occupies that venue on that day.
+3. **My requests:** see your requests with their status, the reason if one was rejected, and a **Cancel event** button on confirmed events.
+
+Try these with the initial data:
+
+| Try | Result |
+|---|---|
+| Main Auditorium, 5 Aug 2026, 14:00–16:00, 300 attendees | Available → submitted as PENDING |
+| Seminar Hall A, 4 Aug 2026, 11:00–13:00 | Blocked: already booked 10:00–12:00 |
+| Conference Room C, 4 Aug 2026, any time 09:00–18:00 | Blocked: renovation |
+| Innovation Lab, 80 attendees | Blocked: holds 60 people |
+| Name **AI Club** → My requests | Seeded Seminar Hall A event, with a Cancel button |
 
 ## Test
 
 ```bash
 pytest -q
 ```
+
+The suite includes headless UI tests (`tests/test_app_*.py`) using Streamlit's `AppTest`. Each test gets its own temporary database through `CEMS_DB_PATH`.
 
 ## Project structure
 
@@ -49,7 +67,11 @@ cems/
   seed.py         initial campus data + reset; CLI entry point
   rules.py        business validations; returns readable reasons
   services.py     request lifecycle: submit, approve, reject, cancel
-ui/               Streamlit pages                            (Steps 4-7)
+app.py            Streamlit entry point: sidebar role/name selector, page routing
+ui/
+  common.py       shared UI helpers (status badges, flash messages)
+  requester.py    new request form with live validation; My requests
+  reviewer.py, facilities.py, schedule.py                    (Steps 5-7)
 tests/            pytest suite; each test uses a fresh in-memory DB
 docs/             assumptions, pitch, contribution notes
 ```

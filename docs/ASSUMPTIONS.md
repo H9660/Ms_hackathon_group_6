@@ -20,6 +20,9 @@ The brief allows teams to add assumptions as long as they are documented and app
 | A12 | Approval **re-checks availability**, excluding the request itself, and refuses if the slot is no longer free. | Defence in depth. The submit-time checks should already guarantee this, but approval is where a booking becomes binding. | `services.approve_request` |
 | A13 | Every transition requires the acting person's **name**. Rejection also requires a **reason**. | Gives an accountable audit trail, and the requester learns why a request was rejected. | `services._require_actor`, `reject_request` |
 | A14 | Records are **never deleted**. Rejecting or cancelling only changes the status. | Keeps the history and audit log intact. | `services`, `repository.update_status` |
+| A15 | In the UI an event takes place on **a single date**: start and end time are on the chosen day. | Fits the 12-hour maximum (A3) and keeps the form simple. | `ui/requester.py` |
+| A16 | The requester's **organiser name is the name entered in the sidebar**. "My requests" and cancel rights use that name. | Follows from having no login (A6). | `app.py`, `ui/requester.py` |
+| A17 | The request form opens on **4 Aug 2026**. | That is the date of the initial campus data, so demo scenarios are one click away. | `ui/requester.DEFAULT_DATE` |
 
 ## Brief conditions → implementation
 
@@ -27,7 +30,7 @@ The brief allows teams to add assumptions as long as they are documented and app
 |---|---|---|
 | 1 | Event has start, end and venue | `rules.validate_time_window`, venue existence check; DB `CHECK (end_at > start_at)` |
 | 2 | No overlapping active or confirmed bookings | `rules.check_availability` → `repository.find_overlapping_events` (only PENDING and CONFIRMED count) |
-| 3 | Conflict prevented before submit | Rules only read, so the UI calls `validate_request` live (Step 4). The service re-validates inside a transaction (Step 3) |
+| 3 | Conflict prevented before submit | `ui/requester.py` re-runs `validate_request` on every change and disables Submit while problems exist. `services.submit_request` re-validates inside the transaction |
 | 4 | Maintenance or renovation unavailability | `rules.check_availability` → `repository.find_overlapping_blocks` |
 | 5 | Review before confirmation | `services.approve_request` re-checks with `check_availability(..., exclude_event_id=...)` (Step 3) |
 | 6 | Reject closes the request and releases the venue | status `REJECTED` is not in `ACTIVE_STATUSES`; there is no edit path |
