@@ -48,11 +48,34 @@ cems/
   repository.py   data access (rows <-> dataclasses); no business rules
   seed.py         initial campus data + reset; CLI entry point
   rules.py        business validations; returns readable reasons
-  services.py     request lifecycle / state transitions      (Step 3)
+  services.py     request lifecycle: submit, approve, reject, cancel
 ui/               Streamlit pages                            (Steps 4-7)
 tests/            pytest suite; each test uses a fresh in-memory DB
 docs/             assumptions, pitch, contribution notes
 ```
+
+## Event lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING: submit (all checks pass)
+    PENDING --> CONFIRMED: Reviewer approves (availability re-checked)
+    PENDING --> REJECTED: Reviewer rejects (reason required)
+    CONFIRMED --> CANCELLED: organiser or Reviewer cancels
+    REJECTED --> [*]: closed; revise by submitting a new request
+    CANCELLED --> [*]
+```
+
+| Workflow | Who | Service function | Effect on the venue |
+|---|---|---|---|
+| Submit a request | Requester | `submit_request` | Holds the slot as PENDING. A conflicting or invalid request is refused with every reason |
+| Approve | Reviewer | `approve_request` | Slot stays held, now CONFIRMED |
+| Reject | Reviewer | `reject_request` | Slot released; the request is closed |
+| Cancel | Organiser or Reviewer | `cancel_event` | Slot released |
+
+- **Atomic operations.** Each operation runs in a single `BEGIN IMMEDIATE` transaction, so the checks and the write cannot be interleaved with another writer, and a failure part-way leaves nothing behind.
+- **Recorded actions.** Every successful transition is written to the audit log with who did it.
+- **One error type.** Refusals raise `BookingError`, whose `reasons` list is ready to show to the user.
 
 ## Initial campus data
 

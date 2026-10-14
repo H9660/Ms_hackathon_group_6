@@ -17,6 +17,9 @@ The brief allows teams to add assumptions as long as they are documented and app
 | A9 | Organiser names are compared **case- and whitespace-insensitively** when deciding who may cancel. | With no login, small typing differences should not lock an organiser out of their own event. | `rules.can_cancel` |
 | A10 | Event type must be one of: Workshop, Hackathon, Placement, Club, Cultural, Competition. | These are the event kinds the brief lists. | `models.EVENT_TYPES`, `rules.validate_request` |
 | A11 | Every problem with a request is reported at once. A check that depends on another is skipped when that check fails: no capacity check without a venue, and no availability check without a valid time window. | The requester can fix everything in one go, without misleading follow-on messages. | `rules.validate_request` |
+| A12 | Approval **re-checks availability**, excluding the request itself, and refuses if the slot is no longer free. | Defence in depth. The submit-time checks should already guarantee this, but approval is where a booking becomes binding. | `services.approve_request` |
+| A13 | Every transition requires the acting person's **name**. Rejection also requires a **reason**. | Gives an accountable audit trail, and the requester learns why a request was rejected. | `services._require_actor`, `reject_request` |
+| A14 | Records are **never deleted**. Rejecting or cancelling only changes the status. | Keeps the history and audit log intact. | `services`, `repository.update_status` |
 
 ## Brief conditions → implementation
 

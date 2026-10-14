@@ -34,7 +34,7 @@ ui/*  ->  services.py  ->  rules.py  ->  repository.py  ->  db.py  ->  models.py
 - `repository.py`: SQL ↔ dataclass mapping. **No business rules, and it never commits.**
 - `rules.py`: validations that return a `list[str]` of human-readable reasons (an empty list means valid). Rules never write.
 - `services.py`: state transitions. Owns transactions (`with transaction(conn, immediate=True):`) and writes to the audit log.
-- `ui/*`: Streamlit only. Calls services and rules; never runs SQL directly.
+- `ui/*`: Streamlit only. Writes go through `services` (catch `BookingError` and show `.reasons`); reads may use `repository`; never runs SQL directly.
 
 ## Conventions
 
