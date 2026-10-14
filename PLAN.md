@@ -1,243 +1,287 @@
-# Campus Event Management System — Team Plan (7 members, 90 min)
+# Campus Event Management System: Team Plan (7 members, 90 min)
 
-**Stack:** Python 3.10+, Streamlit (UI), SQLite (persistence, stdlib `sqlite3`), pytest (tests).
-**Shape:** 42 small commits = **6 rounds × 7 members**, strict round-robin (M1 → M2 → … → M7 → M1 …).
-So no member ever makes two commits in a row, and everyone ends with exactly 6 commits.
+**Stack:** Python 3.10+, Streamlit (UI), SQLite (stdlib `sqlite3`), pytest.
 
----
+**Process: 7 incremental steps, one member per step, one commit per step.**
+M1 builds Step 1 and pushes. M2 pulls, builds Step 2 on top, and pushes. Then M3, and so on up to M7.
+Each step leaves the project **working and tested**, and each step builds visibly on the previous one.
 
-## 1. Team roles (each person owns files so parallel work rarely conflicts)
-
-| Member | Role | Owns (primary files) | Demo talking point |
-|---|---|---|---|
-| **M1** | Data & persistence lead | `cems/db.py`, `cems/repository.py`, `cems/venue_service.py`, `cems/notifications.py` | Schema, overlap SQL, venue blocks |
-| **M2** | Business rules owner | `cems/models.py`, `cems/rules.py` | Every validation and its message (conditions 1–4, 10) |
-| **M3** | Workflow / state machine | `cems/services.py` | Submit → review → confirm/reject → cancel (conditions 5–8) |
-| **M4** | Requester UI | `ui/requester.py` | Request form, live conflict pre-check, My Requests, inbox |
-| **M5** | Reviewer & Facilities UI | `app.py`, `ui/reviewer.py`, `ui/facilities.py` | Review queue, approve/reject, maintenance blocks |
-| **M6** | QA / testing | `tests/*` | Test strategy, edge cases, E2E scenario |
-| **M7** | Docs, pitch & schedule view | `README.md`, `docs/*`, `ui/schedule.py` | Problem framing, assumptions, trade-offs, 2-slide pitch |
-
----
-
-## 2. Problem understanding (agree on this in the first 5 minutes)
-
-**Stakeholders / personas**
-- **Requester:** a student club, faculty member or placement cell organiser who requests venues.
-- **Event Reviewer:** the Student Affairs / Events Office. Approves or rejects pending requests.
-- **Facilities Manager:** blocks venues for maintenance or renovation.
-- **Campus community (viewer):** sees the venue schedule and availability.
-
-**Event lifecycle (state machine)**
 ```
-            submit (all validations pass)
-  [new] ───────────────────────────────▶ PENDING ──approve──▶ CONFIRMED ──cancel──▶ CANCELLED
-                                            │
-                                            └──reject(reason)──▶ REJECTED (closed)
+M1 ──push──▶ M2 ──push──▶ M3 ──push──▶ M4 ──push──▶ M5 ──push──▶ M6 ──push──▶ M7 ──push──▶ demo
+Foundation   Rules        Workflow     Requester UI Reviewer +   Bonus:       Schedule +
+                                                    Facilities   Notify       Docs/Pitch
+```
+
+---
+
+## 1. How 7 people stay busy while only one is committing
+
+The commits happen one after another, but **the work happens in parallel**:
+
+| Phase | What everyone does |
+|---|---|
+| **Kickoff (min 0–8)** | All 7 agree on §2 (problem, rules, assumptions) and §3 (interface contract). Everyone pastes the contract into their own Copilot or Claude session. |
+| **Draft ahead** | While earlier steps are being built, each member drafts **their own step's code** on their machine against the agreed contract. Do not commit it yet. |
+| **Your turn** | `git pull`, run the previous step (validate it), merge in your draft, finish it, test, commit, push, announce. |
+| **After your turn** | Review the next steps as they land: pull, run `pytest -q` and the app, and report problems to the author before they hand over. |
+
+**Each step owns its own files** (listed below), so the drafts merge into the codebase without conflicts.
+
+**Target timing:** ≈ 11 minutes per step.
+
+| Step | Owner | Window (min) |
+|---|---|---|
+| 1 | M1 | 8–19 |
+| 2 | M2 | 19–30 |
+| 3 | M3 | 30–41 |
+| 4 | M4 | 41–52 |
+| 5 | M5 | 52–63 |
+| 6 | M6 | 63–74 |
+| 7 | M7 | 74–85 |
+| Demo rehearsal | all | 85–90 |
+
+If a step runs late, its owner trims scope (see "If short on time" in each step). The handover must not slip.
+
+---
+
+## 2. Problem understanding (agree in kickoff)
+
+**Personas**
+- **Requester:** a club, faculty member or placement cell organiser who requests venues.
+- **Event Reviewer:** the Student Affairs / Events Office. Approves or rejects requests.
+- **Facilities Manager:** blocks venues for maintenance or renovation.
+- **Campus community:** views the venue schedule.
+
+**Event lifecycle**
+```
+ submit (all checks pass)
+ ──────────────▶ PENDING ──approve──▶ CONFIRMED ──cancel──▶ CANCELLED
+                    └──reject(reason)──▶ REJECTED (closed; revisions need a new request)
 ```
 - **Active statuses** (these hold the venue): `PENDING`, `CONFIRMED`.
-- **Released statuses** (these free the venue): `REJECTED`, `CANCELLED`. Releasing needs no extra code: the overlap query only looks at active statuses.
+- **Released statuses** (these free the venue): `REJECTED`, `CANCELLED`. Releasing needs no extra code: the overlap query only counts active statuses.
 
 **How the brief's conditions map to code**
 
-| # | Condition | Where it lives |
+| # | Condition | Enforced in (step) |
 |---|---|---|
-| 1 | Event has start, end and venue | `models.Event`, `rules.validate_time_window` |
-| 2 | No overlapping active or confirmed bookings | `repository.find_overlapping_events` + `rules` |
-| 3 | Conflicts prevented **before** submit | live pre-check in `ui/requester.py`; `services.submit_request` re-validates |
-| 4 | Maintenance or renovation blocks | `venue_blocks` table, `rules` block check, `ui/facilities.py` |
-| 5 | Review before confirmation | `PENDING` → `approve_request` → `CONFIRMED` |
-| 6 | Reject closes the request and releases the venue; revisions need a new request | `reject_request`; there is no edit path for requests |
-| 7 | Appropriate user can cancel | `rules.can_cancel` (the organiser of the event, or the Reviewer) |
-| 8 | Cancel releases the venue | status becomes `CANCELLED`, which is not active |
-| 9 | No partial or split bookings, no suggestions | out of scope (documented) |
-| 10 | Unsatisfiable request is stopped with a clear reason | `validate_request` returns human-readable reasons |
+| 1 | Start, end and venue | `models.Event`, `rules` (S1, S2) |
+| 2 | No overlap with active or confirmed bookings | `repository.find_overlapping_events` + `rules` (S2) |
+| 3 | Conflict prevented before submit | live pre-check in the request form (S4); the service re-validates (S3) |
+| 4 | Maintenance or renovation blocks | `venue_blocks` + `rules` (S2), facilities page (S5) |
+| 5 | Review before confirmation | `approve_request` (S3), reviewer page (S5) |
+| 6 | Reject closes the request and releases the venue | `reject_request` (S3); there is no edit path |
+| 7 | Appropriate user cancels | `rules.can_cancel`: the organiser or the Reviewer (S2, S3) |
+| 8 | Cancel releases the venue | status becomes `CANCELLED` (S3) |
+| 9 | No partial or split bookings, no suggestions | out of scope (S7 docs) |
+| 10 | Clear reason when a request can't proceed | `validate_request` returns readable messages (S2) |
 
-**Assumptions** (M7 documents these, and everyone applies them the same way)
-1. Overlap means `new.start < existing.end AND existing.start < new.end`. Back-to-back bookings (one ends at 12:00, the next starts at 12:00) are **allowed**.
-2. Expected attendees must be no more than the venue capacity.
+**Assumptions** (everyone applies them the same way)
+1. Overlap means `new.start < old.end AND old.start < new.end`. Back-to-back bookings (12:00 end, 12:00 start) are **allowed**.
+2. Attendees must be no more than the venue capacity. Attendees must be more than 0.
 3. `end > start`, and the maximum duration is 12 hours.
-4. **Past dates are not rejected against the real clock.** The seed data is in Aug 2026, so this rule would break the demo. State this assumption openly.
-5. A maintenance block **cannot** be added over an active booking. The Facilities Manager must get the event cancelled first. This keeps condition 2 consistent.
+4. Past dates are **not** rejected against the real clock. The seed data is in Aug 2026, so this rule would break the demo.
+5. A maintenance block cannot be placed over an active booking. The event must be cancelled first.
 6. No authentication. A role selector in the sidebar stands in for login, and this trade-off is documented.
-7. Only `PENDING` requests can be approved or rejected. Only `CONFIRMED` events can be cancelled. Every other transition is an error.
-8. Times are stored as ISO strings `YYYY-MM-DDTHH:MM`. String comparison of these strings matches chronological order.
+7. Only `PENDING` requests can be approved or rejected. Only `CONFIRMED` events can be cancelled.
+8. Datetimes are stored as ISO strings `YYYY-MM-DDTHH:MM`, which sort chronologically.
 
 ---
 
-## 3. Interface contract (agreed before coding, so people can build in parallel)
+## 3. Interface contract (frozen at kickoff; everyone drafts against it)
 
 ```python
-# cems/models.py  (M2)
-class Status(str, Enum): PENDING="PENDING"; CONFIRMED="CONFIRMED"; REJECTED="REJECTED"; CANCELLED="CANCELLED"
+# cems/models.py                                   (Step 1)
+class Status(str, Enum): PENDING, CONFIRMED, REJECTED, CANCELLED
 ACTIVE_STATUSES = (Status.PENDING, Status.CONFIRMED)
-@dataclass class Venue: id:int; name:str; type:str; capacity:int
-@dataclass class Event: id:int|None; title:str; event_type:str; organiser:str; venue_id:int
-                        start:datetime; end:datetime; attendees:int; status:Status
-                        reject_reason:str|None=None
-@dataclass class VenueBlock: id:int|None; venue_id:int; start:datetime; end:datetime; reason:str
+EVENT_TYPES = ["Workshop", "Hackathon", "Placement", "Club", "Cultural", "Competition"]
+@dataclass Venue(id, name, type, capacity)
+@dataclass Event(id, title, event_type, organiser, venue_id, start, end, attendees, status, reject_reason=None)
+@dataclass VenueBlock(id, venue_id, start, end, reason)
 
-# cems/db.py  (M1)
-get_conn(path="cems.db") -> sqlite3.Connection        # row_factory = sqlite3.Row
-init_db(conn) -> None                                  # tables: venues, events, venue_blocks, audit_log, notifications
+# cems/db.py + cems/seed.py                        (Step 1)
+get_conn(path="cems.db") -> Connection;  init_db(conn);  seed(conn);  reset_db(conn)
 
-# cems/repository.py  (M1)
-list_venues(conn) -> list[Venue];  get_venue(conn, venue_id) -> Venue|None
-list_events(conn, status=None, organiser=None) -> list[Event];  get_event(conn, event_id) -> Event|None
-insert_event(conn, event) -> int;  update_status(conn, event_id, status, reason=None) -> None
-find_overlapping_events(conn, venue_id, start, end) -> list[Event]       # active statuses only
-find_overlapping_blocks(conn, venue_id, start, end) -> list[VenueBlock]
-insert_block(conn, block) -> int;  list_blocks(conn, venue_id=None) -> list[VenueBlock]
-log_action(conn, event_id, action, actor, detail="") -> None
+# cems/repository.py                               (Step 1; overlap queries added in Step 2)
+list_venues, get_venue, list_events(status=None, organiser=None), get_event,
+insert_event -> id, update_status(event_id, status, reason=None), list_blocks(venue_id=None),
+insert_block -> id, log_action(event_id, action, actor, detail=""), get_history(event_id)
+find_overlapping_events(conn, venue_id, start, end) -> list[Event]       # active only (Step 2)
+find_overlapping_blocks(conn, venue_id, start, end) -> list[VenueBlock]  # (Step 2)
 
-# cems/rules.py  (M2)
-validate_request(conn, title, venue_id, start, end, attendees) -> list[str]   # [] means valid
+# cems/rules.py                                    (Step 2)
+validate_request(conn, title, organiser, event_type, venue_id, start, end, attendees) -> list[str]
 can_cancel(event, actor_name, actor_role) -> list[str]
 
-# cems/services.py  (M3)
+# cems/services.py                                 (Step 3)
 class BookingError(Exception): reasons: list[str]
-submit_request(conn, title, event_type, organiser, venue_id, start, end, attendees) -> int
-approve_request(conn, event_id, actor) -> None
-reject_request(conn, event_id, actor, reason) -> None
-cancel_event(conn, event_id, actor, actor_role) -> None
+submit_request(...) -> int;  approve_request(conn, event_id, actor)
+reject_request(conn, event_id, actor, reason);  cancel_event(conn, event_id, actor, actor_role)
 
-# cems/venue_service.py  (M1)
-add_block(conn, venue_id, start, end, reason) -> int    # raises BookingError if active events overlap
-```
+# cems/venue_service.py                            (Step 5)
+add_block(conn, venue_id, start, end, reason) -> int    # BookingError if active events overlap
 
-**Target layout**
-```
-app.py                 # Streamlit entry: role selector + routing
-cems/ __init__.py models.py db.py seed.py repository.py rules.py services.py venue_service.py notifications.py
-ui/   __init__.py requester.py reviewer.py facilities.py schedule.py
-tests/ conftest.py test_seed.py test_rules.py test_conflicts.py test_lifecycle.py test_notifications.py
-docs/ ASSUMPTIONS.md PITCH.md contributions/m1.md … m7.md
-README.md requirements.txt .gitignore
+# cems/notifications.py                            (Step 6)
+notify(conn, recipient, message);  list_for(conn, recipient);  unread_count(conn, recipient);  mark_read(conn, id)
 ```
 
 ---
 
-## 4. Git workflow (read this before the first commit)
+## 4. Git routine (every step)
 
-1. **Everyone commits from their own machine with their own git identity.** That is what makes GitHub attribute the commit to them. If two people share a laptop, use:
-   `git commit --author="Full Name <github-email>" -m "..."`
-2. Work on `main`. Before **every** commit:
-   ```
-   git pull --rebase
-   pytest -q            # from Round 1 onward; do not push a red suite
-   git add <your files only>
-   git commit -m "<type>(<area>): <message>"
-   git push
-   ```
-3. **Baton rule:** commits go in round-robin order M1 → M7. Post "pushed #N" in the team chat so the next person knows it is their turn. If the next person is not ready, any other member who is ready may go first, **as long as they are not the author of the previous commit**. Then restore the order.
-4. Prefer touching only your own files. Where a commit has to edit someone else's file (for example a hook in `services.py`), keep the edit to a few lines and tell the owner.
-5. Commit message types: `feat`, `fix`, `test`, `docs`, `chore`, `refactor`.
+```
+git pull --rebase
+pytest -q && streamlit run app.py      # validate the previous step first (from Step 4 on, app.py exists)
+# ...merge in your draft, finish, test...
+pytest -q                              # must be green
+git add <your step's files>
+git commit -m "<message from your step>"
+git push                               # then announce "Step N pushed" in team chat
+```
+- Commit from **your own machine and git identity** so GitHub credits you. On a shared laptop, use `git commit --author="Name <github-email>"`.
+- Every step includes `docs/contributions/mN.md`. It covers what you built, one business rule, one assumption or trade-off, how you validated your step **and the previous step**, and one AI suggestion you corrected.
 
 ---
 
-## 5. Commit plan: 6 rounds × 7 commits
+## 5. The 7 steps
 
-Each row is **one commit**. "Check" says how the author validates the change before pushing.
+### Step 1 · M1 · Foundation: data model, database, seed data
+**Builds:** the project skeleton and a working data layer.
 
-### Round 1: Foundation (≈ min 5–20)
+| Files | Content |
+|---|---|
+| `.gitignore`, `requirements.txt` | `streamlit`, `pytest`; ignore `*.db`, `__pycache__`, `.venv` |
+| `cems/__init__.py`, `cems/models.py` | `Status`, `ACTIVE_STATUSES`, `EVENT_TYPES`, dataclasses |
+| `cems/db.py` | `get_conn`, `init_db`: tables `venues`, `events`, `venue_blocks`, `audit_log` |
+| `cems/seed.py` | idempotent `seed()` with the 5 venues; Seminar Hall A CONFIRMED 4 Aug 2026 10:00–12:00; Innovation Lab CONFIRMED 6 Aug 2026 14:00–17:00; Conference Room C renovation block 4 Aug 2026 09:00–18:00. Also `reset_db()` |
+| `cems/repository.py` | CRUD functions from §3 (no overlap queries yet) |
+| `tests/conftest.py`, `tests/test_seed.py` | in-memory DB fixture; 5 venues, 2 confirmed events, 1 block; seeding twice doesn't duplicate |
+| `README.md` | overview, prerequisites, setup and test commands |
+| `docs/contributions/m1.md` | |
 
-| # | Who | Files | Change | Commit message | Check |
-|---|---|---|---|---|---|
-| 1 | M1 | `.gitignore`, `requirements.txt`, `cems/__init__.py`, `ui/__init__.py`, `tests/__init__.py` | Project scaffold. requirements: `streamlit`, `pytest`. Ignore `*.db`, `__pycache__`, `.venv` | `chore: scaffold project structure and dependencies` | `pip install -r requirements.txt` works |
-| 2 | M2 | `cems/models.py` | `Status` enum, `ACTIVE_STATUSES`, `Venue`, `Event`, `VenueBlock` dataclasses | `feat(models): add domain models and event status enum` | `python -c "import cems.models"` |
-| 3 | M3 | `cems/db.py` | `get_conn`, `init_db` with tables `venues`, `events`, `venue_blocks`, `audit_log` | `feat(db): add SQLite schema and connection helper` | create an in-memory DB and list the tables |
-| 4 | M4 | `cems/seed.py` | `seed(conn)` (idempotent). Inserts the 5 venues, Seminar Hall A confirmed 4 Aug 10–12, Innovation Lab confirmed 6 Aug 14–17, Conference Room C renovation block 4 Aug 09–18 | `feat(seed): load initial campus venues, events and blocks` | run it twice; still exactly 5 venues |
-| 5 | M5 | `app.py` | Streamlit page config. Sidebar role selector (Requester / Reviewer / Facilities Manager / Schedule). Calls `init_db` + `seed` on startup. Placeholder content per role | `feat(app): add Streamlit entry point with role navigation` | `streamlit run app.py` opens |
-| 6 | M6 | `tests/conftest.py`, `tests/test_seed.py` | `conn` fixture: in-memory DB, `init_db` + `seed`. Tests: 5 venues seeded, 2 confirmed events, 1 block | `test: add DB fixture and seed data tests` | `pytest -q` green |
-| 7 | M7 | `README.md`, `docs/ASSUMPTIONS.md` | README: overview, prerequisites, setup, run, test commands. ASSUMPTIONS.md: assumptions 1–8 from §2 | `docs: add README run instructions and initial assumptions` | someone else follows the README successfully |
+**Done when:** `pip install -r requirements.txt && pytest -q` passes.
+**Commit:** `feat: project foundation with domain models, SQLite schema and seed data`
+**If short on time:** drop `reset_db` (M5 can add it in Step 5).
 
-### Round 2: First vertical slice: submit a request (≈ min 20–38)
+### Step 2 · M2 · Business rules and conflict detection
+**Builds on Step 1:** adds every validation the brief requires, each with a clear message.
 
-| # | Who | Files | Change | Commit message | Check |
-|---|---|---|---|---|---|
-| 8 | M1 | `cems/repository.py` | `list_venues`, `get_venue`, `list_events`, `get_event`, `insert_event`, `update_status`, `list_blocks`, `log_action` (row ↔ dataclass mapping) | `feat(repo): add data access functions for venues and events` | quick test in REPL |
-| 9 | M2 | `cems/rules.py` | `validate_request` with these checks: title not empty, venue exists, `end > start`, duration ≤ 12 h, attendees > 0, attendees ≤ capacity. Each failure returns a clear message, e.g. "Seminar Hall A holds 120; you requested 150" | `feat(rules): validate time window, duration and capacity` | manual calls |
-| 10 | M3 | `cems/services.py` | `BookingError`, `submit_request`: validate, insert as `PENDING`, write to the audit log, return the id. Raise `BookingError(reasons)` on failure | `feat(services): submit event request as PENDING after validation` | REPL: valid → id; invalid → reasons |
-| 11 | M4 | `ui/requester.py`, wire in `app.py` | Request form: title, type, organiser, venue (dropdown showing capacity), date, start and end time, attendees. On submit, call the service and show success or the list of errors | `feat(ui): add event request form for requesters` | submit one request in the browser |
-| 12 | M5 | `ui/reviewer.py`, wire in `app.py` | Reviewer page: table of `PENDING` requests (title, venue, time, attendees, organiser). Read-only for now | `feat(ui): add reviewer queue of pending requests` | request from #11 appears |
-| 13 | M6 | `tests/test_rules.py` | Tests: end before start, zero duration, more than 12 h, capacity exceeded (150 people in Seminar Hall A), unknown venue, valid request passes | `test(rules): cover time window and capacity validations` | `pytest -q` green |
-| 14 | M7 | `README.md` | Sections: Stakeholders & personas, workflows, state diagram (Mermaid), mapping of conditions 1–10 (table from §2) | `docs: document stakeholders, workflows and event state machine` | renders on GitHub |
+| Files | Content |
+|---|---|
+| `cems/repository.py` (+2 functions) | `find_overlapping_events` (active only: `start < :end AND :start < end`), `find_overlapping_blocks` |
+| `cems/rules.py` | `validate_request` checks: title and organiser required, event type valid, venue exists, `end > start`, ≤ 12 h, `0 < attendees ≤ capacity`, no overlapping active booking, no block. Messages such as *"Seminar Hall A is already booked 10:00–12:00 for 'X' (CONFIRMED)"*, *"Conference Room C unavailable 09:00–18:00: renovation"*, *"Innovation Lab holds 60; you requested 80"*. Also `can_cancel` |
+| `tests/test_rules.py` | each rule failing; back-to-back 12:00–14:00 passes; same time at a different venue passes; `can_cancel` cases |
+| `docs/ASSUMPTIONS.md` | assumptions 1–8 and the condition → code table from §2 |
+| `docs/contributions/m2.md` | |
 
-### Round 3: Conflicts + review decisions (≈ min 38–55)
+**Done when:** `pytest -q` passes, including the seed conflicts.
+**Commit:** `feat(rules): add booking validations with overlap and venue-block detection`
 
-| # | Who | Files | Change | Commit message | Check |
-|---|---|---|---|---|---|
-| 15 | M1 | `cems/repository.py` | `find_overlapping_events` (SQL: `venue_id=? AND status IN ('PENDING','CONFIRMED') AND start < :end AND :start < end`), `find_overlapping_blocks` | `feat(repo): query overlapping active events and venue blocks` | Seminar Hall A 4 Aug 11:00–13:00 → returns 1 |
-| 16 | M2 | `cems/rules.py` | Add conflict and block checks to `validate_request`, with clear messages: "Seminar Hall A is already booked 10:00–12:00 for '…' (CONFIRMED)" / "Conference Room C unavailable 09:00–18:00: renovation" | `feat(rules): reject overlapping bookings and blocked venues` | manual calls |
-| 17 | M3 | `cems/services.py` | `approve_request` and `reject_request(reason)`. Guard: only `PENDING` can change; a reject reason is required. Approve re-runs the conflict check defensively. Both write to the audit log | `feat(services): add approve and reject transitions with guards` | REPL |
-| 18 | M4 | `ui/requester.py` | **Pre-submit availability check** (condition 3): when venue, date or time change, call `validate_request` and show the problems live. The submit button stays disabled while there are problems | `feat(ui): show live conflict check and block invalid submissions` | choose Seminar Hall A 4 Aug 10–12 → button disabled with reason |
-| 19 | M5 | `ui/reviewer.py` | Approve button and Reject button (with a required reason input) for each pending request. Show success or error and refresh | `feat(ui): let reviewers approve or reject pending requests` | approve in browser → leaves the queue |
-| 20 | M6 | `tests/test_conflicts.py` | Overlap with seed confirmed event fails; back-to-back 12:00–14:00 passes; renovation block fails; a `PENDING` request also blocks the slot; a different venue at the same time passes | `test(conflicts): cover overlap, adjacency, pending holds and blocks` | `pytest -q` green |
-| 21 | M7 | `docs/ASSUMPTIONS.md` | Add "Business rules" (each rule → function that enforces it) and "Scope prioritised / excluded" (partial and split bookings, suggestions, auth, recurring events, editing requests) | `docs: map business rules to code and record scope decisions` | review with M2 |
+### Step 3 · M3 · Workflow state machine
+**Builds on Step 2:** turns validated input into a lifecycle with guarded transitions.
 
-### Round 4: Cancellation, facilities, visibility (≈ min 55–70)
+| Files | Content |
+|---|---|
+| `cems/services.py` | `BookingError`. `submit_request`: inside `BEGIN IMMEDIATE`, validate, insert as `PENDING`, write to the audit log. `approve_request`: only from PENDING, re-checks conflicts. `reject_request`: only from PENDING, reason required. `cancel_event`: uses `can_cancel`. Every transition writes to the audit log |
+| `tests/test_lifecycle.py` | **E2E:** submit → approve → cancel → the same slot is resubmitted successfully. Submit → reject → another organiser books the slot. A PENDING request blocks the slot. Invalid transitions raise (approve after reject, cancel while pending, approve twice) |
+| `README.md` (+section) | state diagram (Mermaid) and workflow description |
+| `docs/contributions/m3.md` | |
 
-| # | Who | Files | Change | Commit message | Check |
-|---|---|---|---|---|---|
-| 22 | M1 | `cems/venue_service.py`, `cems/repository.py` (`insert_block`) | `add_block`: validates `end > start` and refuses when active events overlap, listing them (assumption 5) | `feat(venues): add maintenance blocks with active-booking guard` | REPL |
-| 23 | M2 | `cems/rules.py` | `can_cancel(event, actor_name, actor_role)`: only `CONFIRMED`; actor is the organiser or has the Reviewer role | `feat(rules): define who can cancel a confirmed event` | manual calls |
-| 24 | M3 | `cems/services.py` | `cancel_event`: uses `can_cancel`, sets `CANCELLED`, writes to the audit log. This releases the venue | `feat(services): cancel confirmed events and release venue` | cancel → same slot bookable again |
-| 25 | M4 | `ui/requester.py` | "My Requests" tab: filter by organiser name, colored status badges, rejection reason shown, Cancel button on `CONFIRMED` events | `feat(ui): add My Requests view with status and cancellation` | cancel in browser |
-| 26 | M5 | `ui/facilities.py`, wire in `app.py` | Facilities page: venue list (type, capacity), add-block form (reason dropdown: maintenance / renovation / other), list of existing blocks, error shown when refused | `feat(ui): add facilities page to manage venue blocks` | block a free slot; block over a booking is refused |
-| 27 | M6 | `tests/test_lifecycle.py` | **E2E:** submit → approve → cancel → the same slot is submitted again successfully. Submit → reject → another organiser books the slot. Invalid transitions: approve after reject, cancel a pending request, approve twice. Block over a confirmed event is refused | `test(lifecycle): end-to-end request, review and cancellation flows` | `pytest -q` green |
-| 28 | M7 | `ui/schedule.py`, wire in `app.py` | Schedule view for everyone: pick a date and see each venue's bookings (with status) and blocks. Visibility is one of the pain points in the brief | `feat(ui): add daily venue schedule view for all users` | 4 Aug shows Seminar Hall A booking and Conference Room C block |
+**Done when:** the full lifecycle works in tests.
+**Commit:** `feat(services): add request lifecycle with review, rejection and cancellation`
 
-### Round 5: Bonus + hardening (≈ min 70–82)
+### Step 4 · M4 · Streamlit app and Requester experience
+**Builds on Step 3:** the first runnable UI, with a working requester flow.
 
-**Bonus feature: in-app notifications.** Requesters get notified when their request is approved, rejected (with the reason) or cancelled. This addresses the brief's pain point of "limited visibility into request status".
+| Files | Content |
+|---|---|
+| `app.py` | page config; `init_db` + `seed` on startup; sidebar role selector (Requester / Reviewer / Facilities / Schedule) and "acting as" name; routing, with placeholders for pages that come later |
+| `ui/__init__.py`, `ui/requester.py` | **New Request** tab: venue dropdown showing type and capacity, date, start and end time, attendees, title, type. **Live pre-check** (condition 3): while the form is filled in, call `validate_request` and list problems; the Submit button stays disabled while any exist. On submit, call `submit_request` and show success. **My Requests** tab: the current user's requests with status badges, the rejection reason, and a Cancel button on CONFIRMED events |
+| `docs/contributions/m4.md` | include manual test results: a valid request, a seed conflict, the renovation block, capacity exceeded |
 
-| # | Who | Files | Change | Commit message | Check |
-|---|---|---|---|---|---|
-| 29 | M1 | `cems/notifications.py`, `cems/db.py` | `notifications` table; `notify(conn, recipient, message)`, `list_for(conn, recipient)`, `mark_read` | `feat(notify): add notification store` | REPL |
-| 30 | M2 | `cems/services.py` (3 small hooks) | Call `notify` from approve, reject and cancel, with meaningful messages | `feat(notify): notify organisers on approve, reject and cancel` | REPL |
-| 31 | M3 | `cems/services.py` | Hardening: wrap submit and approve in one transaction (`BEGIN IMMEDIATE`) so the check and the insert are atomic. Add `get_history(event_id)` from the audit log | `fix(services): make conflict check and write atomic; expose history` | `pytest -q` green |
-| 32 | M4 | `ui/requester.py` | Notifications inbox for the organiser (unread count badge, mark as read) | `feat(ui): add requester notification inbox` | approve as reviewer → inbox shows it |
-| 33 | M5 | `ui/reviewer.py`, `app.py` | Polish: show the audit history of each request; consistent `st.error` / `st.success` messages; seed reset button for demos | `feat(ui): show request history and add demo reset` | full click-through |
-| 34 | M6 | `tests/test_notifications.py` | Notifications created on approve, reject and cancel; none on a failed submit | `test(notify): verify notifications across lifecycle events` | `pytest -q` green |
-| 35 | M7 | `docs/PITCH.md` | Two slides. **Slide 1:** problem, personas, workflows, rules, assumptions, scope. **Slide 2:** architecture (UI → services → rules → repository → SQLite), decisions, trade-offs, testing, limitations, next steps | `docs: add two-slide consulting pitch` | team review |
+**Done when:** `streamlit run app.py` lets you submit a valid request, and an invalid one is blocked with its reasons.
+**Commit:** `feat(ui): add Streamlit app with request form, live conflict check and My Requests`
 
-### Round 6: Ownership notes + release (≈ min 82–88)
+### Step 5 · M5 · Reviewer and Facilities Manager
+**Builds on Step 4:** completes the end-to-end lifecycle in the UI.
 
-Each member writes **their own file**, so there are no merge conflicts. Each file answers the evaluator's questions: *my contribution · one business rule · one part of the solution · one assumption or trade-off · how I validated it.*
+| Files | Content |
+|---|---|
+| `cems/venue_service.py` | `add_block`: validate the time window and reason; refuse when active events overlap, listing them (assumption 5) |
+| `ui/reviewer.py` | queue of PENDING requests; Approve; Reject with a required reason; expandable audit history; can cancel any CONFIRMED event |
+| `ui/facilities.py` | venue list; add-block form (maintenance / renovation / other); list of blocks; a refused block shows its reason |
+| `app.py` (routing) | wire both pages; sidebar "Reset demo data" button |
+| `tests/test_blocks.py` | a block on a free slot works; a block over a confirmed event is refused; a block over a pending request is refused; after a block, a request in that window is refused |
+| `docs/contributions/m5.md` | |
 
-| # | Who | Files | Commit message |
-|---|---|---|---|
-| 36 | M1 | `docs/contributions/m1.md` | `docs: add M1 contribution notes (persistence and overlap query)` |
-| 37 | M2 | `docs/contributions/m2.md` | `docs: add M2 contribution notes (validation rules)` |
-| 38 | M3 | `docs/contributions/m3.md` | `docs: add M3 contribution notes (state machine and atomicity)` |
-| 39 | M4 | `docs/contributions/m4.md` | `docs: add M4 contribution notes (requester UX and pre-check)` |
-| 40 | M5 | `docs/contributions/m5.md` | `docs: add M5 contribution notes (reviewer and facilities UI)` |
-| 41 | M6 | `docs/contributions/m6.md` + `README.md` "Testing" section with the `pytest` output | `docs: add test strategy, results and M6 notes` |
-| 42 | M7 | `docs/contributions/m7.md` + `README.md` final sections: trade-offs, known limitations, next steps, links to the pitch and contributions | `docs: finalize README with trade-offs, limitations and next steps` |
+**Done when:** the full flow works in the browser. Submit as Requester, approve as Reviewer, cancel as Requester, then the slot is free again.
+**Commit:** `feat(ui): add reviewer approval queue and facilities venue blocking`
 
-**Contributions are equal: 6 commits each.** Each member has 3–4 code or test commits and 1–2 docs commits, and owns one demo-able area.
+### Step 6 · M6 · Bonus: notifications
+**Builds on Step 5:** fixes the brief's pain points of "limited visibility into request status" and "delays in reviewing".
+
+| Files | Content |
+|---|---|
+| `cems/db.py` (+table), `cems/notifications.py` | `notifications` table and the functions from §3 |
+| `cems/services.py` (small hooks) | notify the Reviewer on submit; notify the organiser on approve, reject (with the reason) and cancel |
+| `ui/requester.py`, `ui/reviewer.py` (small additions) | inbox with an unread badge and mark as read |
+| `tests/test_notifications.py` | notifications are created for each transition; none on a failed submit; `mark_read` lowers the unread count |
+| `docs/contributions/m6.md` | |
+
+**Done when:** approving as Reviewer makes a notification appear in the Requester's inbox.
+**Commit:** `feat(notify): add in-app notifications for request lifecycle events`
+**If short on time:** do the organiser notifications only.
+
+### Step 7 · M7 · Schedule view, final validation and the consulting pitch
+**Builds on Step 6:** visibility for the whole campus, plus the deliverables needed to submit.
+
+| Files | Content |
+|---|---|
+| `ui/schedule.py`, `app.py` (routing) | pick a date and see each venue's bookings (with status) and blocks; capacity shown |
+| `docs/TEST_SCENARIOS.md` | manual end-to-end scenarios run on the final build, with pass or fail recorded |
+| `docs/PITCH.md` | **Slide 1:** problem, personas, workflows, rules, assumptions, scope. **Slide 2:** architecture (UI → services → rules → repository → SQLite), design decisions, trade-offs, testing, limitations, next steps |
+| `README.md` (final) | scope prioritised, features excluded, trade-offs, known limitations, next steps, links to the docs |
+| `docs/contributions/m7.md` | |
+
+**Done when:** `pytest -q` passes, every scenario is recorded, and the README covers all repository deliverables.
+**Commit:** `feat: add venue schedule view, test scenarios and consulting pitch`
 
 ---
 
-## 6. Demo script (≈ 5 min, rehearse at min 85–90)
+## 6. Workload balance
 
-1. **M7:** problem, personas, rules (Slide 1).
-2. **M4 → M5:** *Happy path.* As a Requester, book Main Auditorium on 5 Aug 2026, 14:00–16:00, 300 attendees. The request is `PENDING`. As the Reviewer, approve it: it is now `CONFIRMED`. The requester's inbox shows the notification.
-3. **M4:** *Conflict.* Seminar Hall A, 4 Aug 2026, 11:00–13:00 → blocked before submit with the reason. Conference Room C on 4 Aug → renovation message. Innovation Lab with 80 attendees → capacity message.
-4. **M5 → M4:** *Release.* Reject a pending request; the same slot is now bookable. Cancel a confirmed event; the slot is released (show it in the schedule view).
-5. **M1:** Facilities Manager adds a maintenance block. A block over a confirmed event is refused.
-6. **M6:** run `pytest -q` live and walk through the test categories.
-7. **M2 / M3:** design decisions: layered architecture, the overlap formula, the state guards, atomic check and insert.
-8. **M7:** Slide 2: trade-offs, limitations, next steps.
+| Member | Code | Tests | Docs | Demo segment |
+|---|---|---|---|---|
+| M1 | models, DB, seed, repository | seed tests | README base | data model and seed |
+| M2 | rules, overlap queries | rule tests | ASSUMPTIONS | conflict rules |
+| M3 | services / state machine | lifecycle E2E | state diagram | lifecycle and guards |
+| M4 | app shell, requester UI | manual UI test | — | happy path and blocked submit |
+| M5 | venue_service, reviewer and facilities UI | block tests | — | approve, reject, block |
+| M6 | notifications (bonus) | notification tests | — | bonus feature |
+| M7 | schedule view | manual scenario run | pitch, final README | Slides 1 and 2 |
 
-**Known limitations to state openly:** no real authentication (the role selector is trusted); single-user SQLite; no recurring events; no editing of requests (by design, per condition 6); no time zones; no email delivery (notifications are in-app only).
-
-**Next steps:** SSO login, email or calendar (.ics) integration, utilisation analytics, alternative-venue suggestions, recurring bookings, approval SLAs.
+Every member has **one commit** that includes code, its validation, and a contribution note.
 
 ---
 
-## 7. AI usage guidance (20% of the score)
+## 7. Demo script (≈ 5 min)
 
-- Give Copilot or Claude **the interface contract in §3** so generated code matches the agreed signatures.
-- Every member **reviews and runs** the AI output before committing. Note in your contribution file one AI suggestion you rejected or corrected (for example, an overlap check using `<=`, which wrongly blocks back-to-back bookings).
-- M6 asks the AI to *propose edge cases*, then keeps only the ones that match the documented assumptions.
+1. **M7:** Slide 1: problem, personas, rules.
+2. **M4:** *Happy path.* As a Requester, book Main Auditorium on 5 Aug 2026, 14:00–16:00, 300 attendees. The request is `PENDING`.
+3. **M5:** As the Reviewer, approve it: `CONFIRMED`. **M6:** the requester's inbox shows the notification.
+4. **M4 / M2:** *Conflicts.* Seminar Hall A, 4 Aug, 11:00–13:00 → overlap. Conference Room C on 4 Aug → renovation. Innovation Lab with 80 attendees → capacity. Each is blocked before submit with its reason.
+5. **M3 / M5:** *Release.* Reject a request, or cancel a confirmed event. **M7:** the schedule view shows the slot free, and it can be booked again.
+6. **M5:** a block over a confirmed event is refused.
+7. **M1 / M6:** run `pytest -q` live and explain the data layer and test coverage.
+8. **M7:** Slide 2: decisions, trade-offs, limitations, next steps.
+
+**Limitations to state:** no real authentication; single-user SQLite; no recurring events; requests can't be edited (by design, per condition 6); no time zones; notifications are in-app only.
+**Next steps:** SSO, email or `.ics` calendar export, utilisation analytics, alternative-venue suggestions, recurring bookings.
+
+---
+
+## 8. AI usage (20% of the score)
+
+- Give the AI the **contract in §3** and **your step's table**, so the code it generates fits the codebase.
+- Review and run everything before committing. Record one AI mistake you corrected in your contribution note (for example, an overlap check using `<=`, which wrongly blocks back-to-back bookings).
+- Before pushing, ask the AI to review your diff against the rules in §2.
