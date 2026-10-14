@@ -64,11 +64,26 @@ CREATE TABLE IF NOT EXISTS audit_log (
     detail      TEXT    NOT NULL DEFAULT '',
     created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime'))
 );
+
+-- In-app notifications (Step 6). recipient is an organiser name or a role
+-- inbox such as 'Reviewer'; NOCASE matches the case-insensitive organiser
+-- comparison used elsewhere (assumption A9).
+CREATE TABLE IF NOT EXISTS notifications (
+    id          INTEGER PRIMARY KEY,
+    recipient   TEXT    NOT NULL COLLATE NOCASE,
+    message     TEXT    NOT NULL,
+    event_id    INTEGER REFERENCES events(id),
+    is_read     INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0, 1)),
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications (recipient, is_read);
 """
 
 # Every data table, children before parents, so rows can be deleted without
-# violating foreign keys. Add new tables here (e.g. notifications in Step 6).
-TABLES_CHILD_FIRST: tuple[str, ...] = ("audit_log", "venue_blocks", "events", "venues")
+# violating foreign keys. Add every new table here.
+TABLES_CHILD_FIRST: tuple[str, ...] = (
+    "notifications", "audit_log", "venue_blocks", "events", "venues",
+)
 
 
 def get_conn(path: str | Path = DEFAULT_DB_PATH) -> sqlite3.Connection:

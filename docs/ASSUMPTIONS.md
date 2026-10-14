@@ -26,6 +26,9 @@ The brief allows teams to add assumptions as long as they are documented and app
 | A18 | Venue blocks may **span several days** and have no 12-hour limit. | Renovations take days. The 12-hour limit (A3) applies only to events. | `venue_service.add_block` |
 | A19 | Facilities can **remove a block** (e.g. work finished early). The period immediately becomes bookable. | The brief notes venues "remaining unavailable" as a pain point. | `venue_service.remove_block` |
 | A20 | The Reviewer page **disables Approve** when the slot is no longer available, and shows why. The service enforces the same check. | Reviewers see the problem before they click. | `ui/reviewer.py`, `services.approve_request` |
+| A21 | Reviewers share **one role inbox** ("Reviewer"). Organisers get a personal inbox keyed by their name, matched case-insensitively. | No user accounts (A6). A shared queue suits a small Events Office. | `notifications.REVIEWER_INBOX`, `COLLATE NOCASE` |
+| A22 | Notifications are **in-app only**: no email or SMS. | The brief rules out external services. | `cems/notifications.py` |
+| A23 | Notifications are written **in the same transaction** as the change they describe. | No notification for a change that was rolled back, and no change without its notification. | `services.*` |
 
 ## Brief conditions → implementation
 

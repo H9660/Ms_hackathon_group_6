@@ -17,6 +17,7 @@ from cems import repository as repo
 from cems import rules, services
 from cems.models import ACTIVE_STATUSES, EVENT_TYPES, Role, Status
 from cems.services import BookingError
+from ui import inbox
 from ui.common import event_summary, set_flash, show_flash, status_badge, venue_label
 
 # Seed data is in early Aug 2026, so default the form there for demos (A4).
@@ -29,11 +30,15 @@ def render(conn: sqlite3.Connection, actor: str) -> None:
     if not actor:
         st.warning("Enter your name or club in the sidebar to make requests.")
         return
-    new_tab, mine_tab = st.tabs(["New request", "My requests"])
+    new_tab, mine_tab, inbox_tab = st.tabs(
+        ["New request", "My requests", inbox.tab_label(conn, actor)]
+    )
     with new_tab:
         _new_request(conn, actor)
     with mine_tab:
         _my_requests(conn, actor)
+    with inbox_tab:
+        inbox.render(conn, actor, key="req_inbox")
 
 
 # --------------------------------------------------------------------------

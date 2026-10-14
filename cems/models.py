@@ -104,3 +104,15 @@ class AuditEntry:
     actor: str
     detail: str
     created_at: str
+
+
+@dataclass
+class Notification:
+    """An in-app message for an organiser or a role inbox (e.g. 'Reviewer')."""
+
+    id: int
+    recipient: str
+    message: str
+    event_id: int | None
+    is_read: bool
+    created_at: str

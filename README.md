@@ -74,12 +74,14 @@ cems/
   rules.py        business validations; returns readable reasons
   services.py     request lifecycle: submit, approve, reject, cancel
   venue_service.py  venue blocks: add (refused over active bookings) / remove
+  notifications.py  in-app notifications (bonus feature)
 app.py            Streamlit entry point: sidebar role/name selector, page routing
 ui/
   common.py       shared UI helpers (status badges, flash messages)
   requester.py    new request form with live validation; My requests
   reviewer.py     pending queue (approve / reject), confirmed events (cancel), all requests
   facilities.py   venue list, current blocks, block-a-venue form
+  inbox.py        notification inbox tab (Requester and Reviewer)
   schedule.py     campus-wide daily schedule                 (Step 7)
 tests/            pytest suite; each test uses a fresh in-memory DB
 docs/             assumptions, pitch, contribution notes
@@ -107,6 +109,21 @@ stateDiagram-v2
 - **Atomic operations.** Each operation runs in a single `BEGIN IMMEDIATE` transaction, so the checks and the write cannot be interleaved with another writer, and a failure part-way leaves nothing behind.
 - **Recorded actions.** Every successful transition is written to the audit log with who did it.
 - **One error type.** Refusals raise `BookingError`, whose `reasons` list is ready to show to the user.
+
+## Bonus feature: in-app notifications
+
+The brief lists *limited visibility into request status* and *delays in reviewing and confirming events* as pain points. Notifications address both:
+
+| Event | Who is notified | Message includes |
+|---|---|---|
+| Request submitted | Reviewer inbox (shared) | request, venue, time, organiser |
+| Request approved | Organiser | who approved it; now CONFIRMED |
+| Request rejected | Organiser | the reason; how to revise (new request) |
+| Event cancelled by the Events Office | Organiser | who cancelled it |
+| Event cancelled by its organiser | Reviewer inbox | the venue is free again |
+
+- **Where they appear:** an **Inbox** tab on the Requester and Reviewer pages, showing the unread count (e.g. *Inbox (2 new)*), NEW badges, and *Mark all as read*.
+- **Sent atomically:** each notification is written inside the same transaction as the change it describes. A notification exists only if that change actually happened, and a refused action sends nothing.
 
 ## Initial campus data
 

@@ -8,9 +8,10 @@ import sqlite3
 import streamlit as st
 
 from cems import repository as repo
-from cems import rules, services
+from cems import notifications, rules, services
 from cems.models import Event, Role, Status, Venue
 from cems.services import BookingError
+from ui import inbox
 from ui.common import event_summary, set_flash, show_flash, status_badge
 
 
@@ -25,8 +26,13 @@ def render(conn: sqlite3.Connection, actor: str) -> None:
     pending = repo.list_events(conn, status=Status.PENDING)
     confirmed = repo.list_events(conn, status=Status.CONFIRMED)
 
-    pending_tab, confirmed_tab, all_tab = st.tabs(
-        [f"Pending review ({len(pending)})", f"Confirmed ({len(confirmed)})", "All requests"]
+    pending_tab, confirmed_tab, all_tab, inbox_tab = st.tabs(
+        [
+            f"Pending review ({len(pending)})",
+            f"Confirmed ({len(confirmed)})",
+            "All requests",
+            inbox.tab_label(conn, notifications.REVIEWER_INBOX),
+        ]
     )
     with pending_tab:
         _pending(conn, actor, pending, venues)
@@ -34,6 +40,9 @@ def render(conn: sqlite3.Connection, actor: str) -> None:
         _confirmed(conn, actor, confirmed, venues)
     with all_tab:
         _all_requests(conn, venues)
+    with inbox_tab:
+        st.caption("Shared inbox for all reviewers.")
+        inbox.render(conn, notifications.REVIEWER_INBOX, key="rev_inbox")
 
 
 def _history(conn: sqlite3.Connection, event: Event) -> None:

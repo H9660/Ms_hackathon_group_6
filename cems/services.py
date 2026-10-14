@@ -6,7 +6,8 @@
 Every operation runs in one ``BEGIN IMMEDIATE`` transaction: the write lock is
 taken before the checks, so no other writer can slip a conflicting booking in
 between "check" and "write", and a failure part-way leaves nothing behind.
-Every successful transition is recorded in the audit log.
+Every successful transition is recorded in the audit log and notifies the
+people affected (Step 6) inside the same transaction.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime
 
+from cems import notifications as notify
 from cems import repository as repo
 from cems import rules
 from cems.db import transaction
@@ -44,6 +46,15 @@ def _load_event(conn: sqlite3.Connection, event_id: int) -> Event:
     if event is None:
         raise BookingError(f"Event request #{event_id} does not exist.")
     return event
+
+
+def _describe(conn: sqlite3.Connection, event: Event) -> str:
+    """"#3 'Tech Talk' at Main Auditorium, 05 Aug 2026 14:00–16:00"."""
+    venue = repo.get_venue(conn, event.venue_id)
+    return (
+        f"#{event.id} '{event.title}' at {venue.name}, "
+        f"{rules.format_window(event.start, event.end)}"
+    )
 
 
 def _require_pending(event: Event, action: str) -> None:
@@ -97,6 +108,12 @@ def submit_request(
             conn, event_id, "SUBMITTED", organiser,
             f"{venue.name}, {rules.format_window(start, end)}, {attendees} attendees",
         )
+        notify.notify(
+            conn, notify.REVIEWER_INBOX,
+            f"New request {_describe(conn, repo.get_event(conn, event_id))} from {organiser} "
+            "is waiting for review.",
+            event_id,
+        )
     return event_id
 
 
@@ -118,6 +135,11 @@ def approve_request(conn: sqlite3.Connection, event_id: int, actor: str) -> None
             raise BookingError([f"Cannot approve request #{event.id}:", *conflicts])
         repo.update_status(conn, event.id, Status.CONFIRMED)
         repo.log_action(conn, event.id, "APPROVED", actor)
+        notify.notify(
+            conn, event.organiser,
+            f"Your request {_describe(conn, event)} was approved by {actor}. It is now CONFIRMED.",
+            event.id,
+        )
 
 
 def reject_request(conn: sqlite3.Connection, event_id: int, actor: str, reason: str) -> None:
@@ -135,6 +157,12 @@ def reject_request(conn: sqlite3.Connection, event_id: int, actor: str, reason: 
         _require_pending(event, "rejected")
         repo.update_status(conn, event.id, Status.REJECTED, reason=reason)
         repo.log_action(conn, event.id, "REJECTED", actor, reason)
+        notify.notify(
+            conn, event.organiser,
+            f"Your request {_describe(conn, event)} was rejected by {actor}: {reason}. "
+            "To revise it, submit a new request.",
+            event.id,
+        )
 
 
 def cancel_event(
@@ -155,3 +183,15 @@ def cancel_event(
             raise BookingError(reasons)
         repo.update_status(conn, event.id, Status.CANCELLED)
         repo.log_action(conn, event.id, "CANCELLED", actor, f"by {Role(actor_role).value}")
+        if Role(actor_role) is Role.REVIEWER:
+            notify.notify(
+                conn, event.organiser,
+                f"Your event {_describe(conn, event)} was cancelled by {actor} (Events Office).",
+                event.id,
+            )
+        else:
+            notify.notify(
+                conn, notify.REVIEWER_INBOX,
+                f"{event.organiser} cancelled {_describe(conn, event)}. The venue is free again.",
+                event.id,
+            )
